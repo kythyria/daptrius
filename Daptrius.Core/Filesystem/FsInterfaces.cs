@@ -18,11 +18,12 @@ namespace Daptrius.Filesystem {
         IFilesystemNode Root { get; }
 
         /// <summary>
-        /// Gets a specific node by its virtual path.
+        /// Gets a specific node by its absolute, normalised, virtual path.
         /// </summary>
         /// <param name="path">Path to look up.</param>
         /// <returns>The node</returns>
         /// <exception cref="FileNotFoundException">Thrown if there is no node at that path.</exception>
+        /// <exception cref="ArgumentException">Thrown if the path is relative or otherwise malformed.</exception>
         IFilesystemNode GetAtPath(string path);
     }
 
@@ -164,15 +165,16 @@ namespace Daptrius.Filesystem {
         string Name { get; }
 
         /// <summary>
-        /// Attempt to read the chunk as text, whether or not it actually is text.
-        /// </summary>
-        /// <returns>Some flavour of <see cref="TextReader"/>, owned by the caller.</returns>
-        TextReader OpenText();
-
-        /// <summary>
         /// Open the chunk as a stream.
         /// </summary>
         /// <returns>A <see cref="Stream"/> of some description, owned by the caller.</returns>
         Stream Open();
+
+        /// <summary>
+        /// Attempt to open the chunk and parse it as a T.
+        /// </summary>
+        /// <typeparam name="T">Type to parse the data as.</typeparam>
+        /// <returns>Parsed data of some kind.</returns>
+        T OpenAs<T>();
     }
 }
