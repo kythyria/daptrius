@@ -66,6 +66,47 @@ namespace Daptrius.Markup.Tests
             AssertAreEqual(expected, lines);
         }
 
+        [TestMethod]
+        public void BadNesting() {
+            var str = "One\n  Two\n    Three\n  \tFour";
+            Assert.ThrowsException<ParseException>(() => {
+                var lines = CollectLines(str);
+            });
+        }
+
+        [TestMethod]
+        public void LiteralBlock() {
+            var str = "One\n  Two\n  Three\n\n    Four\n   Five\nSix";
+            using (var sr = new StringReader(str))
+            using (var lr = new LineReader(sr, nameof(SimpleUnixLines))) {
+                UnparsedLine ul;
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(1, 0, "One"), ul);
+                ul = lr.Read(true); Assert.AreEqual(new UnparsedLine(2, 1, "Two"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(3, 1, "Three"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(4, 1, ""), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(5, 1, "  Four"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(6, 1, " Five"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(7, 0, "Six"), ul);
+            }
+        }
+
+        [TestMethod]
+        public void BlankLines() {
+            var str = "One\n\nTwo\n  Three\n\n  Four\n\nFive";
+            var expected = new List<UnparsedLine> {
+                new UnparsedLine(1, 0, "One"),
+                new UnparsedLine(2, 0, ""),
+                new UnparsedLine(3, 0, "Two"),
+                new UnparsedLine(4, 1, "Three"),
+                new UnparsedLine(5, 1, ""),
+                new UnparsedLine(6, 1, "Four"),
+                new UnparsedLine(7, 1, ""),
+                new UnparsedLine(8, 0, "Five")
+            };
+            var lines = CollectLines(str);
+            AssertAreEqual(expected, lines);
+        }
+
         static List<UnparsedLine> CollectLines(LineReader lr) {
             var lines = new List<UnparsedLine>();
             while (true) {

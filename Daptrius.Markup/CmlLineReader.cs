@@ -99,10 +99,18 @@ namespace Daptrius.Markup
         /// <summary>
         /// Read a line.
         /// </summary>
+        /// <param name="beginLiteralBlock">
+        /// If true, the line read might be the first of a literal block.
+        /// </param>
         /// <returns>
         /// The line read, or null at EOF.
         /// </returns>
-        public UnparsedLine Read() {
+        /// <remarks>
+        /// Beginning a literal block involves the line being read having an increase of indent.
+        /// Thereafter the indent does not increase until the end of the block, it's treated
+        /// literally.
+        /// </remarks>
+        public UnparsedLine Read(bool beginLiteralBlock = false) {
             var str = reader.ReadLine();
             
             if (str == null) { // EOF
@@ -122,6 +130,13 @@ namespace Daptrius.Markup
                 return new UnparsedLine(++LineNumber, CurrentIndent, textPart);
             }
             else if (indentPart.StartsWith(indents.Peek())) { // Indented more
+                if(beginLiteralBlock) {
+                    InLiteralBlock = true;
+                }
+                else if (InLiteralBlock) {
+                    var prefixlen = indents.Peek().Length;
+                    return new UnparsedLine(++LineNumber, CurrentIndent, str.Substring(prefixlen));
+                }
                 indents.Push(indentPart);
                 return new UnparsedLine(++LineNumber, ++CurrentIndent, textPart);
             }
@@ -130,27 +145,13 @@ namespace Daptrius.Markup
                     indents.Pop();
                     CurrentIndent--;
                     if(indents.Peek() == indentPart) {
+                        InLiteralBlock = false;
                         return new UnparsedLine(++LineNumber, CurrentIndent, textPart);
                     }
                 }
 
                 throw new ParseException(ParseErrorCode.BadIndent, Filename, LineNumber, 0);
             }
-        }
-
-        /// <summary>
-        /// Try to read a line that's part of a literal block. 
-        /// </summary>
-        /// <remarks>
-        /// If not in a literal block, expect the line read
-        /// to be indented an additional level. If not, return null, if yes,
-        /// set the new indentation level, set <see cref="InLiteralBlock"/>,
-        /// and return the line. At the end of the block, return null.
-        /// </remarks>
-        /// <returns>The line, or null if the end of the block or a block
-        /// could not be started.</returns>
-        public UnparsedLine ReadLiteral() {
-            throw new NotImplementedException();
         }
 
         #region IDisposable Support
