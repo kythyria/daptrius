@@ -1,0 +1,81 @@
+﻿The CompactMLReader accepts a syntax related to HAML, albeit rather smaller since this is
+not a templating language. It's indentation sensitive ala python, but doesn't require you
+use a specific indentation beyond using ONE of tabs or spaces to indent.
+
+A document is a prologue followed by lines:
+
+    CmlDocument := Prolog? CmlLine*
+
+The prolog identifies the type of document and optionally its root element. First Name is
+the doctype, second is the element. Because there's often a large number of attributes on
+the root element you can extend it if needed.
+
+    Prolog      = '!!!' S? Name (Name PrologAttrs?)?
+    PrologAttrs = Attributes? (NL '!!' Attributes)*
+
+The remaining lines are maybe indented lines
+    
+    CmlLine     = (Indentation (Element | Comment | NormalLine | CDataBegin ))? NL
+    Indentation = [ \t]*
+    Comment     = '!--' Character*
+    CDataBegin  = '!CDATA'
+
+The HAML-like element syntax is a line which after indent matches this production. Notice
+that there's no way to have an attribute whose name is just ':' but really why would you?
+
+    Element     = '%' ElemContent (ElemEnd S NormalLine?)?
+    ElemContent = Name ShortId? ShortClass* Attributes?
+    ShortId     = '#' Name
+    ShortClass  = '.' Name
+    Attributes  = S Attribute (S Attribute)*
+    Attribute   = Name ('=' AttrValue )?
+    AttrValue   = '"' ([^<&"] | Reference)* '"'
+                  | "'" ([^<&'] | Reference)* "'"
+                  | [^<>&'" ]*
+    ElemEnd     = S ':' | '>' | '<' | '><' | '<>' | CDataBegin
+
+Comments and cdata sections absorb everything with increased indentation, but still strip
+the indentation before passing on to the rest of the application.
+
+NormalLine is a line of regular XML, except that shorthands work.
+
+    NormalLine  = ('\' [%])? (CharData | XmlElement | Reference)*
+    Reference   = '&' ( Name | '#x' [0-9A-Fa-f]+ | '#' [0-9]+ ) ';'
+    CharData    = [^<&]*
+-----------------------------------------------------------------------------------------
+First stage of parsing breaks document into lines and identifies indents.
+
+Indent level increments whenever there's more indent characters in the current line than
+the previous, decrements when there's less. Blank lines are deemed to have the SAME as
+the previous line regardless of the actual number. Randomly indenting more is a syntax
+error.
+
+Elements are a line starting with %
+
+Element lines can be terminated by : > < >< <> -# !CDATA or end of line
+    : just terminates
+    > trims whitespace from around the element
+    < trims whitespace from immediately inside the element
+    >< and <> do both
+    -# makes the rest of the line a comment
+    !CDATA begins a cdata block
+
+In between is "compact sTag" syntax.
+    Appending #foo to the tag name sets the id attribute to "foo"
+    Appending .bar adds "bar" to the class attribute (space-delimited namelist, like css)
+    an attribute name surrounded by whitespace sets it to "1"
+    attr=val is like attr="val" but doesn't allow spaces or colons or etc
+
+Comment lines start with -# and can start a block if the following lines are indented.
+
+cdata lines start with !CDATA and likewise.
+
+Both blocks absorb all further indentation in their blocks as literal characters.
+
+Everything else is a regular line. All regular lines are placed into a paragraph: any
+time a regular line is seen that isn't in a paragraph a new one is started. Any time a
+blank line is seen the paragraph is terminated.
+
+Paragraphs can contain XML elements; these support compact sTag syntax.
+
+Inside places where XML would allow entity references, entity references are allowed.
