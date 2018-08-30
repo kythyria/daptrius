@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace Daptrius.Markup
 {
-    class UnparsedLine {
+    public class UnparsedLine : IEquatable<UnparsedLine> {
         public UnparsedLine(int line, int indent, string text) {
             LineNumber = line;
             CurrentIndent = indent;
@@ -16,6 +16,37 @@ namespace Daptrius.Markup
         public int LineNumber { get; private set; }
         public int CurrentIndent { get; private set; }
         public string Body { get; private set; }
+
+        public override bool Equals(object obj) {
+            return Equals(obj as UnparsedLine);
+        }
+
+        public bool Equals(UnparsedLine other) {
+            return other != null &&
+                   LineNumber == other.LineNumber &&
+                   CurrentIndent == other.CurrentIndent &&
+                   Body == other.Body;
+        }
+
+        public override int GetHashCode() {
+            var hashCode = 447885035;
+            hashCode = hashCode * -1521134295 + LineNumber.GetHashCode();
+            hashCode = hashCode * -1521134295 + CurrentIndent.GetHashCode();
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Body);
+            return hashCode;
+        }
+
+        public override string ToString() {
+            return String.Format("{{UnparsedLine:{0}:{1}:{2}}}", LineNumber, CurrentIndent, Body);
+        }
+
+        public static bool operator ==(UnparsedLine line1, UnparsedLine line2) {
+            return EqualityComparer<UnparsedLine>.Default.Equals(line1, line2);
+        }
+
+        public static bool operator !=(UnparsedLine line1, UnparsedLine line2) {
+            return !(line1 == line2);
+        }
     }
 
     /// <summary>
@@ -29,7 +60,7 @@ namespace Daptrius.Markup
     /// class rejects are either ambiguous, or later stages of parsing can inhibit
     /// rejection by use of the literal block function.
     /// </remarks>
-    internal class LineReader : IDisposable {
+    public class LineReader : IDisposable {
         /// <summary>
         /// Regex matching a line consisting of whitespace followed by anything.
         /// </summary>
