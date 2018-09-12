@@ -7,14 +7,37 @@ using System.Text.RegularExpressions;
 namespace Daptrius.Markup
 {
     public class UnparsedLine : IEquatable<UnparsedLine> {
-        public UnparsedLine(int line, int indent, string text) {
+        public UnparsedLine(string file, int line, int indentlevel, string indent, string text) {
+            Filename = file;
             LineNumber = line;
-            CurrentIndent = indent;
+            IndentLevel = indentlevel;
+            Indent = indent;
             Body = text;
         }
 
+        /// <summary>
+        /// Part of the line that is indentation
+        /// </summary>
+        public string Indent { get; private set; }
+
+        /// <summary>
+        /// File the line came from
+        /// </summary>
+        public string Filename { get; private set; }
+
+        /// <summary>
+        /// 1-indexed number of the line within the file
+        /// </summary>
         public int LineNumber { get; private set; }
-        public int CurrentIndent { get; private set; }
+
+        /// <summary>
+        /// How many indentation levels the current line is indented by
+        /// </summary>
+        public int IndentLevel { get; private set; }
+
+        /// <summary>
+        /// Non-indentation text on the line
+        /// </summary>
         public string Body { get; private set; }
 
         public override bool Equals(object obj) {
@@ -23,21 +46,23 @@ namespace Daptrius.Markup
 
         public bool Equals(UnparsedLine other) {
             return other != null &&
-                   LineNumber == other.LineNumber &&
-                   CurrentIndent == other.CurrentIndent &&
-                   Body == other.Body;
+                Filename == other.Filename &&
+                LineNumber == other.LineNumber &&
+                IndentLevel == other.IndentLevel &&
+                Body == other.Body;
         }
 
         public override int GetHashCode() {
             var hashCode = 447885035;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Filename);
             hashCode = hashCode * -1521134295 + LineNumber.GetHashCode();
-            hashCode = hashCode * -1521134295 + CurrentIndent.GetHashCode();
+            hashCode = hashCode * -1521134295 + IndentLevel.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Body);
             return hashCode;
         }
 
         public override string ToString() {
-            return String.Format("{{UnparsedLine:{0}:{1}:{2}}}", LineNumber, CurrentIndent, Body);
+            return String.Format("{{UnparsedLine:{3}:{0}:{1}:{2}}}", LineNumber, IndentLevel, Body, Filename);
         }
 
         public static bool operator ==(UnparsedLine line1, UnparsedLine line2) {
@@ -124,10 +149,10 @@ namespace Daptrius.Markup
 
             if (textPart.Length == 0) { // Effectively blank line.
                 // Blank lines have the same indentation as the previous line.
-                return new UnparsedLine(++LineNumber, CurrentIndent, "");
+                return new UnparsedLine(Filename, ++LineNumber, CurrentIndent, indentPart, "");
             }
             else if (indentPart == indents.Peek()) { // Same as last line
-                return new UnparsedLine(++LineNumber, CurrentIndent, textPart);
+                return new UnparsedLine(Filename, ++LineNumber, CurrentIndent, indentPart, textPart);
             }
             else if (indentPart.StartsWith(indents.Peek())) { // Indented more
                 if(beginLiteralBlock) {
@@ -135,10 +160,10 @@ namespace Daptrius.Markup
                 }
                 else if (InLiteralBlock) {
                     var prefixlen = indents.Peek().Length;
-                    return new UnparsedLine(++LineNumber, CurrentIndent, str.Substring(prefixlen));
+                    return new UnparsedLine(Filename, ++LineNumber, CurrentIndent, indentPart, str.Substring(prefixlen));
                 }
                 indents.Push(indentPart);
-                return new UnparsedLine(++LineNumber, ++CurrentIndent, textPart);
+                return new UnparsedLine(Filename, ++LineNumber, ++CurrentIndent, indentPart, textPart);
             }
             else { // Must be indented less or messed up indentation
                 while(indents.Count > 1) {
@@ -146,7 +171,7 @@ namespace Daptrius.Markup
                     CurrentIndent--;
                     if(indents.Peek() == indentPart) {
                         InLiteralBlock = false;
-                        return new UnparsedLine(++LineNumber, CurrentIndent, textPart);
+                        return new UnparsedLine(Filename, ++LineNumber, CurrentIndent, indentPart, textPart);
                     }
                 }
 
