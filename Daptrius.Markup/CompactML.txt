@@ -63,6 +63,7 @@ Element lines can be terminated by : > < >< <> -# !CDATA or end of line
 In between is "compact sTag" syntax.
     Appending #foo to the tag name sets the id attribute to "foo"
     Appending .bar adds "bar" to the class attribute (space-delimited namelist, like css)
+    These appends stack: %div#foo.bar.baz
     an attribute name surrounded by whitespace sets it to "1"
     attr=val is like attr="val" but doesn't allow spaces or colons or etc
 
@@ -79,3 +80,16 @@ blank line is seen the paragraph is terminated.
 Paragraphs can contain XML elements; these support compact sTag syntax.
 
 Inside places where XML would allow entity references, entity references are allowed.
+
+Prologue is identified with !!! and MUST be present.
+
+XML spec says
+NameStartChar
+= ":" | [A-Z] | "_" | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+
+= "[A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u10000-\uEFFFF]"
+    A-Z_a-z\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u02FF\u0370-\u037D\u037F-\u1FFF\u200C-\u200D\u2070-\u218F\u2C00-\u2FEF\u3001-\uD7FF\uF900-\uFDCF\uFDF0-\uFFFD\u010000-\u0EFFFF";
+
+NameChar = NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040] 
+         = "-0-9\u00B7\u0300-\u036F\u203F-\u2040{ncc}"
+         =  -0-9\u00B7\u0300-\u036F\u203F-\u2040{ncc}

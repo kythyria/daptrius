@@ -81,11 +81,11 @@ namespace Daptrius.Markup.Tests
             using (var lr = new LineReader(sr, nameof(SimpleUnixLines))) {
                 UnparsedLine ul;
                 ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 1, 0, "", "One"), ul);
-                ul = lr.Read(true); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 2, 1, "Two"), ul);
-                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 3, 1, "Three"), ul);
-                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 4, 1, ""), ul);
-                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 5, 1, "  Four"), ul);
-                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 6, 1, " Five"), ul);
+                ul = lr.Read(true); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 2, 1, "  ", "Two"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 3, 1, "  ", "Three"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 4, 1, "  ", ""), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 5, 1, "  ", "  Four"), ul);
+                ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 6, 1, "  ", " Five"), ul);
                 ul = lr.Read(); Assert.AreEqual(new UnparsedLine(nameof(CmlLineParser), 7, 0, "", "Six"), ul);
             }
         }
@@ -97,10 +97,10 @@ namespace Daptrius.Markup.Tests
                 new UnparsedLine(nameof(CmlLineParser), 1, 0, "", "One"),
                 new UnparsedLine(nameof(CmlLineParser), 2, 0, "", ""),
                 new UnparsedLine(nameof(CmlLineParser), 3, 0, "", "Two"),
-                new UnparsedLine(nameof(CmlLineParser), 4, 1, "Three"),
+                new UnparsedLine(nameof(CmlLineParser), 4, 1, "  ", "Three"),
                 new UnparsedLine(nameof(CmlLineParser), 5, 1, "", ""),
-                new UnparsedLine(nameof(CmlLineParser), 6, 1, "Four"),
-                new UnparsedLine(nameof(CmlLineParser), 7, 1, ""),
+                new UnparsedLine(nameof(CmlLineParser), 6, 1, "  ", "Four"),
+                new UnparsedLine(nameof(CmlLineParser), 7, 1, "", ""),
                 new UnparsedLine(nameof(CmlLineParser), 8, 0, "", "Five")
             };
             var lines = CollectLines(str);

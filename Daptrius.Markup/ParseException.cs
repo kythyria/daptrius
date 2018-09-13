@@ -14,6 +14,11 @@ namespace Daptrius.Markup
 
         public static ParseErrorCode Generic = new ParseErrorCode("CML0", "Unspecified failure");
         public static ParseErrorCode BadIndent = new ParseErrorCode("CML1", "Mismatched indentation");
+        public static ParseErrorCode BadProlog = new ParseErrorCode("CML2", "Prolog is bad or missing");
+        public static ParseErrorCode BadQName = new ParseErrorCode("CML3", "Expected a QName, got something that wasn't");
+        public static ParseErrorCode NoEntity = new ParseErrorCode("CML4", "Entity reference references nonexistent entity");
+        public static ParseErrorCode NoAttrValue = new ParseErrorCode("CML5", "Unquoted attribute value must not be empty");
+        public static ParseErrorCode MangledTag = new ParseErrorCode("CML6", "Tag is malformed");
     }
 
 
