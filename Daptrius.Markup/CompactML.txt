@@ -23,7 +23,7 @@ The remaining lines are maybe indented lines
 The HAML-like element syntax is a line which after indent matches this production. Notice
 that there's no way to have an attribute whose name is just ':' but really why would you?
 
-    Element     = '%' ElemContent (ElemEnd S NormalLine?)?
+    Element     = '%' ElemContent (':' S NormalLine?)?
     ElemContent = Name ShortId? ShortClass* Attributes?
     ShortId     = '#' Name
     ShortClass  = '.' Name
@@ -32,7 +32,6 @@ that there's no way to have an attribute whose name is just ':' but really why w
     AttrValue   = '"' ([^<&"] | Reference)* '"'
                   | "'" ([^<&'] | Reference)* "'"
                   | [^<>&'" ]*
-    ElemEnd     = S ':' | '>' | '<' | '><' | '<>' | CDataBegin
 
 Comments and cdata sections absorb everything with increased indentation, but still strip
 the indentation before passing on to the rest of the application.
@@ -93,3 +92,20 @@ NameStartChar
 NameChar = NameStartChar | "-" | "." | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040] 
          = "-0-9\u00B7\u0300-\u036F\u203F-\u2040{ncc}"
          =  -0-9\u00B7\u0300-\u036F\u203F-\u2040{ncc}
+----------------
+Parser take two
+
+In a pre-lexer stage, pull apart the whitespace and replace it with INDENT and OUTDENT markers. Also
+create RS and RE tokens for start and end of a line after indentation is skipped.
+
+```
+foo
+  %bar
+    baz <foo/>
+  barrow
+qux
+```
+needs to be read as
+```
+SOF RS TEXT("foo") RE INDENT RS TEXT("%bar")
+```
