@@ -26,14 +26,14 @@ namespace Daptrius.Markup {
             var shId = $"{nameStartCharClass}(?:{escapeddot}|{nameCharClass})*";
             var shClass = $"(?:{escapeddot}|{nameCharClass})*";
 
-            CommentLine = new Regex(@"^-#(.*)$");
+            CommentLine = new Regex(@"^!#(.*)$");
             PrologueLine = new Regex(@"^!!!\s*(\S+)");
             StartElementLine = new Regex(@"^%\s*");
             ElementName = new Regex($"\\G((?<prefix>{ncName}):)?(?<localpart>{ncName})");
             ClsIdShorthand = new Regex($"\\G\\s*(?:\\.(?<class>{shClass})|#(?<id>{shId}))");
             Attribute = new Regex($"\\G\\s+(?<name>(?:{ncName}:)?{ncName})(?:=(?:\"(?<value>[^\"]*)\"|\'(?<value>[^\']*)\'|(?<unquotedvalue>\\w*)))?");
             EntityRef = new Regex($"&({nameStartCharClass}(?:[\\.:]|{nameCharClass})*);");
-            EndElementLine = new Regex(@"\s+(<|>|<>|><|!CDATA|:|$)");
+            EndElementLine = new Regex(@"\s*(:|$)");
         }
 
         public static readonly string TrimInside = "<";

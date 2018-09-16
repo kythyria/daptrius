@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Antlr4" Version="4.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CmlLexer.g4">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="CmlParser.g4">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+  </ItemGroup>
+
+</Project>

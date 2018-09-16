@@ -1,4 +1,4 @@
-﻿namespace Daptrius.Markup
+﻿namespace Daptrius.Markup.Grammar
 {
     partial class CmlLexer
     {

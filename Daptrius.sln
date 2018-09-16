@@ -12,7 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daptrius.Markup", "Daptrius.Markup\Daptrius.Markup.csproj", "{76458D40-A50A-43D4-B2EB-FEF7E6E4087C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daptrius.Markup.Tests", "Daptrius.Markup.Tests\Daptrius.Markup.Tests.csproj", "{6B079B50-04E9-467D-9EF6-8C8441479F08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Daptrius.Markup.Tests", "Daptrius.Markup.Tests\Daptrius.Markup.Tests.csproj", "{6B079B50-04E9-467D-9EF6-8C8441479F08}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Daptrius.Markup.Grammar", "Daptrius.Markup.Grammar\Daptrius.Markup.Grammar.csproj", "{AD9473AD-A17B-4812-9892-C8DF271802E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -32,6 +34,10 @@ Global
 		{6B079B50-04E9-467D-9EF6-8C8441479F08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6B079B50-04E9-467D-9EF6-8C8441479F08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6B079B50-04E9-467D-9EF6-8C8441479F08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AD9473AD-A17B-4812-9892-C8DF271802E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AD9473AD-A17B-4812-9892-C8DF271802E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AD9473AD-A17B-4812-9892-C8DF271802E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AD9473AD-A17B-4812-9892-C8DF271802E4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
