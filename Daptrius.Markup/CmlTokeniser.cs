@@ -47,6 +47,7 @@ namespace Daptrius.Markup {
         private UnparsedLine prevLine;
         private int startIndent = 0;
         private int currentIndent = 0;
+        private int col = 0;
         private bool inParagraph = false;
 
         public CmlTokeniser(CmlDtdFactory dtdFactory) {
@@ -120,22 +121,22 @@ namespace Daptrius.Markup {
             var m = CmlPatterns.StartElementLine.Match(currentLine.Body);
             if(!m.Success) { return; }
 
-            int pos = m.Length;
+            col = m.Length;
 
-            m = CmlPatterns.ElementName.Match(currentLine.Body, pos);
+            m = CmlPatterns.ElementName.Match(currentLine.Body, col);
             if (!m.Success) {
-                throw new ParseException(ParseErrorCode.BadQName, currentLine.Filename, currentLine.LineNumber, currentLine.Indent.Length + pos);
+                throw new ParseException(ParseErrorCode.BadQName, currentLine.Filename, currentLine.LineNumber, currentLine.Indent.Length + col);
             }
 
-            Out(TokenType.StartElement, m.Groups[1].Value, pos);
-            pos += m.Length;
+            Out(TokenType.StartElement, m.Groups[1].Value, col);
+            col += m.Length;
 
             // We don't check if any attributes occur twice here, because it needs 
             // awareness of namespaces, which this tokeniser doesn't have. For the
             // same reason we just blindly emit @class and #id each time we see it.
 
             while (true) {
-                m = CmlPatterns.ClsIdShorthand.Match(currentLine.Body, pos);
+                m = CmlPatterns.ClsIdShorthand.Match(currentLine.Body, col);
                 if (m.Success) {
                     if(m.Groups["class"].Success) {
                         Out(TokenType.AttributeName, dtd.ClassAttribute, m.Groups["class"].Index);
@@ -146,13 +147,13 @@ namespace Daptrius.Markup {
                         Out(TokenType.AttributeValue, m.Groups["id"].Value, m.Groups["id"].Index);
                     }
                     else {
-                        throw new ParseException(ParseErrorCode.Generic, currentLine.Filename, currentLine.LineNumber, currentLine.Indent.Length + pos);
+                        throw new ParseException(ParseErrorCode.Generic, currentLine.Filename, currentLine.LineNumber, currentLine.Indent.Length + col);
                     }
-                    pos += m.Length;
+                    col += m.Length;
                     continue;
                 }
 
-                m = CmlPatterns.Attribute.Match(currentLine.Body, pos);
+                m = CmlPatterns.Attribute.Match(currentLine.Body, col);
                 if (m.Success) {
                     var name = m.Groups["name"];
                     var value = m.Groups["value"];
@@ -161,30 +162,34 @@ namespace Daptrius.Markup {
                     Out(TokenType.AttributeName, m.Groups["name"].Value, m.Groups["name"].Index);
 
                     if (value.Success) {
-                        var expanded = ExpandAttributes(value.Value, value.Index + pos);
-                        Out(TokenType.AttributeValue, expanded, pos + value.Index);
+                        var expanded = ExpandAttributes(value.Value, value.Index + col);
+                        Out(TokenType.AttributeValue, expanded, col + value.Index);
                     }
                     else if (unquotedvalue.Success && unquotedvalue.Length > 0) {
-                        Out(TokenType.AttributeValue, unquotedvalue.Value, value.Index + pos);
+                        Out(TokenType.AttributeValue, unquotedvalue.Value, value.Index + col);
                     }
                     else if (unquotedvalue.Success && unquotedvalue.Length == 0) {
-                        throw new ParseException(ParseErrorCode.NoAttrValue, currentLine.Filename, currentLine.LineNumber, pos + unquotedvalue.Index);
+                        throw new ParseException(ParseErrorCode.NoAttrValue, currentLine.Filename, currentLine.LineNumber, col + unquotedvalue.Index);
                     }
                     else {
-                        Out(TokenType.AttributeValue, dtd.AttributeTruthyValue, pos + m.Length);
+                        Out(TokenType.AttributeValue, dtd.AttributeTruthyValue, col + m.Length);
                     }
-                    pos += m.Length;
+                    col += m.Length;
                     continue;
                 }
 
-                m = CmlPatterns.EndElementLine.Match(currentLine.Body, pos);
+                m = CmlPatterns.EndElementLine.Match(currentLine.Body, col);
                 if(m.Success) { break; }
                 else {
-                    throw new ParseException(ParseErrorCode.MangledTag, currentLine.Filename, currentLine.LineNumber, pos);
+                    throw new ParseException(ParseErrorCode.MangledTag, currentLine.Filename, currentLine.LineNumber, col);
                 }
             }
-            
 
+            col += m.Length;
+
+            if (m.Groups[1].Length > 0) {
+                //TryReadTextLine();
+            }
         }
 
         private string ExpandAttributes(string text, int startcolumn) {
@@ -223,6 +228,7 @@ namespace Daptrius.Markup {
         private void ReadNext() {
             prevLine = currentLine;
             currentLine = reader.Read();
+            col = 0;
         }
     }
 }

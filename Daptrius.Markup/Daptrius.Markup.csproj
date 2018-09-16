@@ -5,6 +5,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Antlr4" Version="4.6.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="mscorlib">
       <HintPath>mscorlib</HintPath>
     </Reference>
@@ -18,6 +22,15 @@
 
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CmlLexer.g4">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
+    <None Update="CmlParser.g4">
+      <Generator>MSBuild:Compile</Generator>
+    </None>
   </ItemGroup>
 
 </Project>
