@@ -19,7 +19,7 @@ elementBlock : ELEMENT_START tagContents (COLON textLine? | COLON? LINE_END (IND
 tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute* ))*;
 shortAttribute : (DOT | HASH) QNAME;
 attribute : QNAME (EQUALS (ATTRVAL_QUOTE attrVal ATTRVAL_QUOTE|ATTRVAL_BARE))?;
-attrVal : (TEXT | entityRef)*;
+attrVal : (text | entityRef)*;
 
 text    : TEXT;
 newline : LINE_END LINE_START;
