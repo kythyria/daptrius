@@ -54,7 +54,7 @@ EQUALS        : '='      -> pushMode(attrVal);
 DOT           : '.';
 HASH          : '#';
 TAG_LINE_END  : LINE_END -> type(LINE_END), popMode;
-TAG_END       : '>';
+TAG_END       : '>'      -> popMode;
 SLASH         : '/';
 COLON         : ':'      -> popMode;
 S             : [ \t]+;
