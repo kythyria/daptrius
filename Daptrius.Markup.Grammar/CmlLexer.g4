@@ -21,16 +21,16 @@ fragment NcName    : NameStartChar (NameChar |'.') *;
 
 // Control (non)characters. Convert changes in indentation into INDENT and OUTDENT,
 // and bracket the nonblank part of the line with LINE_START and LINE_END.
-//INDENT     : '\uFDD0';
-//OUTDENT    : '\uFDD1';
-//LINE_START : '\uFDD2';
-//LINE_END   : '\n';
+INDENT     : '\uFDD0';
+OUTDENT    : '\uFDD1';
+LINE_START : '\uFDD2';
+LINE_END   : '\n';
 
 // For debugging purposes
-INDENT     : '{';
-OUTDENT    : '}';
-LINE_START : '(';
-LINE_END   : '\n';
+//INDENT     : '{';
+//OUTDENT    : '}';
+//LINE_START : '(';
+//LINE_END   : '\n';
 
 // Things that start a line
 ELEMENT_START : LINE_START '%'   -> pushMode(tagContent);

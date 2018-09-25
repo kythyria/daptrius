@@ -8,12 +8,6 @@ namespace Daptrius.Markup {
     /// The settings required to expand a CML document into a DOM.
     /// </summary>
     public class CmlDtd {
-        /// <summary>
-        /// This namespace is never used for any real element. It serves to denote that an attribute should
-        /// have the namespace of its containing element when used in <see cref="IdAttribute"/> or
-        /// <see cref="ClassAttribute"/>.
-        /// </summary>
-        public const string UseElementNamespace = "https://ns.berigora.net/2018/daptrius/useElementNamespace";
 
         /// <summary>
         /// Name of implied root elements.
@@ -24,6 +18,11 @@ namespace Daptrius.Markup {
         /// Name of the element that text blocks are wrapped in.
         /// </summary>
         public string TextBlockElement { get; set; }
+
+        ///<summary>
+        ///Name of the element that literal blocks are wrapped in.
+        ///</summary>
+        public string LiteralBlockElement { get; set; }
 
         /// <summary>
         /// Attribute to use for the Id shorthand.
@@ -61,5 +60,51 @@ namespace Daptrius.Markup {
         /// System identifier on the DOCTYPE declaration.
         /// </summary>
         public string SystemIdentifier { get; set; }
+
+
+        /// <summary>
+        /// DTD used when parsing DTD files.
+        /// </summary>
+        public static CmlDtd MetaDtd { get => metaDtd; }
+
+        /// <summary>
+        /// DTD used when no DTD is found.
+        /// </summary>
+        public static CmlDtd Default { get => defaultDtd; }
+        public static Dictionary<string, string> DefaultEntities { get => defaultEntities; }
+
+        private static CmlDtd metaDtd = new CmlDtd {
+            DefaultRootElement = "cml-dtd",
+            TextBlockElement = "block",
+            LiteralBlockElement = "block",
+            IdAttribute = "xml:id",
+            ClassAttribute = "class",
+            AttributeTruthyValue = "1",
+            DefaultPrefixes = new Dictionary<string, string> {
+                { "", "https://ns.berigora.net/2018/Daptrius/Dtd" }
+            },
+            Entities = DefaultEntities
+        };
+
+        private static CmlDtd defaultDtd = new CmlDtd {
+            DefaultRootElement = "daptrius:root",
+            TextBlockElement = "daptrius:text-block",
+            LiteralBlockElement = "daptrius:literal-block",
+            IdAttribute = "xml:id",
+            ClassAttribute = "class",
+            AttributeTruthyValue = "1",
+            DefaultPrefixes = new Dictionary<string, string> {
+                { "daptrius", "https://ns.berigora.net/2018/daptrius" }
+            },
+            Entities = DefaultEntities
+        };
+
+        private static Dictionary<string, string> defaultEntities = new Dictionary<string, string> {
+            { "lt", "<" },
+            { "gt", ">" },
+            { "amp", "&" },
+            { "apos", "'" },
+            { "quot", "\"" }
+        };
     }
 }

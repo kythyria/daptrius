@@ -3,7 +3,7 @@ parser grammar CmlParser;
 options { tokenVocab=CmlLexer; }
 
 cmlDocument : prologue elementContent EOF;
-prologue : PROLOG S? QNAME LINE_END;
+prologue : PROLOG S? tagContents LINE_END;
 elementContent : (commentBlock|cdataBlock|elementBlock|textBlock|blankLine)+;
 
 blankLine : (LINE_START LINE_END)+;
@@ -18,15 +18,14 @@ elementBlock : ELEMENT_START tagContents (COLON textLine? | COLON? LINE_END (IND
 
 tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute* ))*;
 shortAttribute : (DOT | HASH) QNAME;
-attribute : QNAME (EQUALS (ATTRVAL_QUOTE attrVal ATTRVAL_QUOTE|ATTRVAL_BARE))?;
-attrVal : (text | entityRef)*;
+attribute : QNAME (EQUALS (ATTRVAL_QUOTE olTextNode ATTRVAL_QUOTE|ATTRVAL_BARE))?;
 
 text    : TEXT;
 newline : LINE_END LINE_START;
 
-textLine       : (ol_textNode | ol_inlineElement)* LINE_END;
-ol_textNode    : (text | entityRef)+;
-ol_inlineElement : startTag (ol_textNode | ol_inlineElement)+ endTag|selfClosingTag;
+textLine       : (olTextNode | olInlineElement)* LINE_END;
+olTextNode    : (text | entityRef)+;
+olInlineElement : startTag (olTextNode | olInlineElement)+ endTag|selfClosingTag;
 
 textBlock: LINE_START (textNode|inlineElement)+ LINE_END;
 textNode : (text|entityRef|newline)+;
