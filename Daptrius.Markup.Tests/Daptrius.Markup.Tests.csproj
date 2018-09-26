@@ -16,4 +16,10 @@
     <ProjectReference Include="..\Daptrius.Markup\Daptrius.Markup.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="DomComparerTests.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -35,12 +35,12 @@ namespace Daptrius.Markup.Tests
 
             Func<XmlNode, bool> SignificantNode = k => {
                 if (k is XmlCharacterData kc) {
-                    return string.IsNullOrWhiteSpace(kc.Data);
+                    return !string.IsNullOrWhiteSpace(kc.Data);
                 }
                 else { return true; }
             };
 
-            foreach (XmlNode i in doc.SelectNodes("/t:test", xnm)) {
+            foreach (XmlNode i in doc.SelectNodes("/t:tests/t:test", xnm)) {
                 var nr = new object[] { i.Attributes["name"].Value, i.Attributes["result"].Value };
                 var items = i.SelectNodes("t:item", xnm).Cast<XmlElement>()
                     .Select(j => (object)j.ChildNodes
@@ -59,6 +59,7 @@ namespace Daptrius.Markup.Tests
     public class DomComparerTests
     {
         [TestMethod]
+        [DeploymentItem("DomComparerTests.xml")]
         [FileData("DomComparerTests.xml")]
         public void TestDom(string name, string result, XmlNode left, XmlNode right) {
             var ld = new XmlDocument();
@@ -69,7 +70,12 @@ namespace Daptrius.Markup.Tests
 
             var comp = new XmlDomComparer();
 
-            Assert.IsTrue(comp.Equals(ld, rd));
+            if (result == "true") {
+                Assert.IsTrue(comp.Equals(ld, rd));
+            }
+            else {
+                Assert.IsFalse(comp.Equals(ld, rd));
+            }
         }
     }
 }

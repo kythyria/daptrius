@@ -1,28 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions">
   <test name="SimpleDoctypeDiffers" result="false">
-    <item><![CDATA[<!DOCTYPE foo>]]></item>
-    <item><![CDATA[<!DOCTYPE bar>]]></item>
+    <item><![CDATA[<!DOCTYPE foo><foo/>]]></item>
+    <item><![CDATA[<!DOCTYPE bar><foo/>]]></item>
   </test>
   <test name="DoctypePubIdDiffers" result="false">
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//W3C//HTML/">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" "/usr/share/sgml/cat"><foo/>]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//W3C//HTML/" "/usr/share/sgml/dog"><foo/>]]></item>
   </test>
   <test name="DoctypeSysIdDiffers" result="false">
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/dog">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" "/usr/share/sgml/cat"><foo/>]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" "/usr/share/sgml/dog"><foo/>]]></item>
   </test>
   <test name="SimpleDoctypeMatches" result="true">
-    <item><![CDATA[<!DOCTYPE foo>]]></item>
-    <item><![CDATA[<!DOCTYPE foo>]]></item>
-  </test>
-  <test name="DoctypePubIdMatches" result="true">
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
+    <item><![CDATA[<!DOCTYPE foo><foo/>]]></item>
+    <item><![CDATA[<!DOCTYPE foo><foo/>]]></item>
   </test>
   <test name="DoctypeSysIdMatches" result="true">
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
-    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" "/usr/share/sgml/cat"><foo/>]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" "/usr/share/sgml/cat"><foo/>]]></item>
   </test>
   <test name="NoPrefixes" result="true">
     <item><![CDATA[<foo/>]]></item>
