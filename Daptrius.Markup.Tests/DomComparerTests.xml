@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions">
+  <test name="SimpleDoctypeDiffers" result="false">
+    <item><![CDATA[<!DOCTYPE foo>]]></item>
+    <item><![CDATA[<!DOCTYPE bar>]]></item>
+  </test>
+  <test name="DoctypePubIdDiffers" result="false">
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//W3C//HTML/">]]></item>
+  </test>
+  <test name="DoctypeSysIdDiffers" result="false">
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/dog">]]></item>
+  </test>
+  <test name="SimpleDoctypeMatches" result="true">
+    <item><![CDATA[<!DOCTYPE foo>]]></item>
+    <item><![CDATA[<!DOCTYPE foo>]]></item>
+  </test>
+  <test name="DoctypePubIdMatches" result="true">
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/">]]></item>
+  </test>
+  <test name="DoctypeSysIdMatches" result="true">
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
+    <item><![CDATA[<!DOCTYPE foo PUBLIC "+//ISO//SGML/" SYSTEM "/usr/share/sgml/cat">]]></item>
+  </test>
+  <test name="NoPrefixes" result="true">
+    <item><![CDATA[<foo/>]]></item>
+    <item><![CDATA[<foo></foo>]]></item>
+  </test>
+  <test name="IrrelevantPrefixes" result="true">
+    <item><![CDATA[<foo xmlns:bar="a"/>]]></item>
+    <item><![CDATA[<foo xmlns:bar="b"/>]]></item>
+  </test>
+  <test name="RelevantNs" result="false">
+    <item><![CDATA[<foo xmlns="a"/>]]></item>
+    <item><![CDATA[<foo xmlns="b"/>]]></item>
+  </test>
+  <test name="RelevantNsMatches" result="true">
+    <item><![CDATA[<foo xmlns="a"/>]]></item>
+    <item><![CDATA[<foo xmlns="a"/>]]></item>
+  </test>
+  <test name="NsMatchesPrefixDoesnt" result="true">
+    <item><![CDATA[<foo xmlns:bar="a"><bar:qux/></foo>]]></item>
+    <item><![CDATA[<foo xmlns:mte="a"><mte:qux/></foo>]]></item>
+  </test>
+  <test name="NsDoesntPrefixMatches" result="false">
+    <item><![CDATA[<foo xmlns:bar="a"><bar:qux/></foo>]]></item>
+    <item><![CDATA[<foo xmlns:bar="b"><bar:qux/></foo>]]></item>
+  </test>
+  <test name="WhitespaceMatters" result="false">
+    <item><![CDATA[<foo>   <bar/></foo>]]></item>
+    <item><![CDATA[<foo><bar/></foo>]]></item>
+  </test>
+  <test name="CharRefsDontMatter" result="true">
+    <item><![CDATA[<foo>&#x4E;</foo>]]></item>
+    <item><![CDATA[<foo>N</foo>]]></item>
+  </test>
+  <test name="AttributePrefixesDontMatter" result="true">
+    <item><![CDATA[<foo xmlns="a" bat="1"/>]]></item>
+    <item><![CDATA[<foo xmlns="a" xmlns:b="a" b:bat="1"/>]]></item>
+  </test>
+  <test name="AttributeOrderDoesntMatter" result="true">
+    <item><![CDATA[<a:foo xmlns:a="one" b:bar="2" xmlns:b="two" c="3"/>]]></item>
+    <item><![CDATA[<a:foo c="3" xmlns:b="two" b:bar="2" xmlns:a="one"   />]]></item>
+  </test>
+</tests>
