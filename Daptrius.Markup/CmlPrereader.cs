@@ -21,7 +21,7 @@ namespace Daptrius.Markup
         public const char Indent = '\uFDD0';
         public const char Outdent = '\uFDD1';
         public const char LineStart = '\uFDD2';
-        public const char LineEnd = '\uFDD3';
+        public const char LineEnd = '\n';
         public const char Replacement = '\uFFFD';
 
         // Line break characters
