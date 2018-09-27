@@ -12,7 +12,8 @@ namespace Daptrius.Markup.Tests
     /// <remarks>
     /// Insignificant whitespace counts. Namespace declarations and prefixes don't.
     /// Entity references aren't expanded, and their replacement text isn't counted.
-    /// Nothing inside an internal or external subset counts.
+    /// Nothing inside an internal or external subset counts. Unprefixed attributes
+    /// are treated as having the same namespace as their element, despite the spec.
     /// </remarks>
     class XmlDomComparer
     {
@@ -77,10 +78,15 @@ namespace Daptrius.Markup.Tests
             if (x.LocalName != y.LocalName) { return false; }
             if (x.NamespaceURI != y.NamespaceURI) { return false; }
 
-            var xattrs = x.Attributes.Cast<XmlAttribute>().Where(i => !IsNsDecl(i)).OrderBy(i => $"{i.NamespaceURI}:{i.LocalName}");
-            var yattrs = y.Attributes.Cast<XmlAttribute>().Where(i => !IsNsDecl(i)).OrderBy(i => $"{i.NamespaceURI}:{i.LocalName}");
+            var xattrs = GetComparableAttributes(x);
+            var yattrs = GetComparableAttributes(y);
 
-            if(!xattrs.Zip(yattrs, AttrEqual).Any(i=>i)) { return false; }
+            if (yattrs.Count() == xattrs.Count()) {
+                if (xattrs.Count() > 0) {
+                    if (!xattrs.Zip(yattrs, (i, j) => i.CompareTo(j)).All(i => i == 0)) { return false; }
+                }
+            }
+            else { return false; }
 
             return ChildrenEquals(x, y);
         }
@@ -93,11 +99,30 @@ namespace Daptrius.Markup.Tests
         }
 
         private bool ChildrenEquals(XmlNode x, XmlNode y) {
-            return x.ChildNodes.Cast<XmlNode>().Zip(y.Cast<XmlNode>(), Equals).Any(i => i);
+            if (x.ChildNodes.Count != y.ChildNodes.Count) {
+                return false;
+            }
+
+            if (x.ChildNodes.Count == 0) { return true; }
+
+            var sames = x.ChildNodes.Cast<XmlNode>().Zip(y.Cast<XmlNode>(), Equals);
+
+            return sames.All(i => i);
         }
 
         private bool IsNsDecl(XmlAttribute attr) {
             return attr.Prefix == "xmlns" || (attr.Prefix == "" && attr.LocalName == "xmlns");
+        }
+
+        private IEnumerable<(string, string, string)> GetComparableAttributes(XmlNode node) {
+            var result = new List<(string, string, string)>();
+            foreach (XmlAttribute i in node.Attributes) {
+                if (i.Prefix == "xmlns") { continue; }
+                if (i.Name == "xmlns") { continue; }
+                result.Add((i.NamespaceURI, i.LocalName, i.Value));
+            }
+            result.Sort();
+            return result;
         }
     }
 }

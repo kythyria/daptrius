@@ -44,20 +44,28 @@
     <item><![CDATA[<foo xmlns:bar="a"><bar:qux/></foo>]]></item>
     <item><![CDATA[<foo xmlns:bar="b"><bar:qux/></foo>]]></item>
   </test>
-  <test name="WhitespaceMatters" result="false">
-    <item><![CDATA[<foo>   <bar/></foo>]]></item>
-    <item><![CDATA[<foo><bar/></foo>]]></item>
+  <test name="WhitespaceMattersInText" result="false">
+    <item><![CDATA[<foo>   bar</foo>]]></item>
+    <item><![CDATA[<foo>bar  </foo>]]></item>
   </test>
   <test name="CharRefsDontMatter" result="true">
     <item><![CDATA[<foo>&#x4E;</foo>]]></item>
     <item><![CDATA[<foo>N</foo>]]></item>
   </test>
-  <test name="AttributePrefixesDontMatter" result="true">
+  <test name="NoAttrPrefixMeansNoNsuri" result="false">
     <item><![CDATA[<foo xmlns="a" bat="1"/>]]></item>
     <item><![CDATA[<foo xmlns="a" xmlns:b="a" b:bat="1"/>]]></item>
+  </test>
+  <test name="AttributePrefixesDontMatter" result="true">
+    <item><![CDATA[<foo xmlns="a" xmlns:b="a" b:bat="1"/>]]></item>
+    <item><![CDATA[<foo xmlns="a" xmlns:c="a" c:bat="1"/>]]></item>
   </test>
   <test name="AttributeOrderDoesntMatter" result="true">
     <item><![CDATA[<a:foo xmlns:a="one" b:bar="2" xmlns:b="two" c="3"/>]]></item>
     <item><![CDATA[<a:foo c="3" xmlns:b="two" b:bar="2" xmlns:a="one"   />]]></item>
+  </test>
+  <test name="ElementPrefixesDontMatter" result="true">
+    <item><![CDATA[<foo xmlns="a" xmlns:b="b" xmlns:c="a"><c:foo/><b:foo/></foo>]]></item>
+    <item><![CDATA[<c:foo xmlns="a" xmlns:b="b" xmlns:c="a"><foo/><b:foo/></c:foo>]]></item>
   </test>
 </tests>
