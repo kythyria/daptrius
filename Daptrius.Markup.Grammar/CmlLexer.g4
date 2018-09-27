@@ -24,7 +24,7 @@ fragment NcName    : NameStartChar (NameChar |'.') *;
 INDENT     : '\uFDD0';
 OUTDENT    : '\uFDD1';
 LINE_START : '\uFDD2';
-LINE_END   : '\n';
+LINE_END   : '\n' | EOF;
 
 // For debugging purposes
 //INDENT     : '{';
@@ -42,7 +42,7 @@ PROLOG        : LINE_START '!!!' -> pushMode(tagContent);
 ENTITY_START  : '&' -> pushMode(entref);
 TAG_START     : '<' -> pushMode(tagContent);
 
-TEXT : (~[(&<\n])+;
+TEXT : (~[(&<\n\uFDD2]);
 
 mode literal;
 LITERAL_TEXT     : (~'\n')+;

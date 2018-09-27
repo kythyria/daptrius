@@ -54,12 +54,12 @@ namespace Daptrius.Markup {
         /// <summary>
         /// Public identifier on the DOCTYPE declaration.
         /// </summary>
-        public string PublicIdentifier { get; set; }
+        public string PublicIdentifier { get; set; } = "";
 
         /// <summary>
         /// System identifier on the DOCTYPE declaration.
         /// </summary>
-        public string SystemIdentifier { get; set; }
+        public string SystemIdentifier { get; set; } = "";
 
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Daptrius.Markup {
             ClassAttribute = "class",
             AttributeTruthyValue = "1",
             DefaultPrefixes = new Dictionary<string, string> {
-                { "", "https://ns.berigora.net/2018/Daptrius/Dtd" }
+                { "", "https://ns.berigora.net/2018/daptrius/dtd" }
             },
             Entities = DefaultEntities
         };

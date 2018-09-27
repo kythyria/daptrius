@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions">
+  <test name="SimplePrologue" result="true">
+    <item><![CDATA[!!! default]]></item>
+    <item><![CDATA[<!DOCTYPE root><root/>]]></item>
+  </test>
+  <test name="PrologueWithDtd" result="true">
+    <item><![CDATA[!!! test]]></item>
+    <item><![CDATA[<!DOCTYPE test-document PUBLIC "test" ""><root/>]]></item>
+  </test>
+  <test name="PrologueWithAttribute" result="true">
+    <item><![CDATA[!!! default attr="foo"]]></item>
+    <item><![CDATA[<!DOCTYPE root><root attr="foo"/>]]></item>
+  </test>
+</tests>

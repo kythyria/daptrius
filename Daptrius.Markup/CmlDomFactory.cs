@@ -87,7 +87,8 @@ namespace Daptrius.Markup
         }
 
         protected virtual Tuple<XmlNode, CmlDtd> MakeRootElement(XmlNode parent, CmlParser.CmlDocumentContext ctx) {
-            var doc = parent.OwnerDocument;
+            // This way around so we still get a NPE if there's something else where OwnerDocument is null.
+            var doc = parent as XmlDocument ?? parent.OwnerDocument;
             var prologue = ctx.prologue();
             if (prologue == null) {
                 // TODO: Better error handling
@@ -103,8 +104,8 @@ namespace Daptrius.Markup
             }
 
             XmlDocumentType doctype = null;
-            if (doc == parent
-                && !(String.IsNullOrEmpty(dtd.PublicIdentifier) && String.IsNullOrEmpty(dtd.SystemIdentifier)))
+            if (doc == parent)
+                //&& !(String.IsNullOrEmpty(dtd.PublicIdentifier) && String.IsNullOrEmpty(dtd.SystemIdentifier)))
             {
                 doctype = doc.CreateDocumentType(dtd.DefaultRootElement, dtd.PublicIdentifier, dtd.SystemIdentifier, null);
 
@@ -113,15 +114,12 @@ namespace Daptrius.Markup
             var av = new AttributeVisitor(doc, dtd);
             av.AddAttributesTo(rootElement, ctx.prologue().tagContents());
 
+            var frag = doc.CreateDocumentFragment();
             if(doctype != null) {
-                var frag = doc.CreateDocumentFragment();
                 frag.AppendChild(doctype);
-                frag.AppendChild(rootElement);
-                return Tuple.Create((XmlNode)frag, dtd);
             }
-            else {
-                return Tuple.Create((XmlNode)rootElement, dtd);
-            }
+            frag.AppendChild(rootElement);
+            return Tuple.Create((XmlNode)frag, dtd);
         }
     }
 
@@ -206,7 +204,7 @@ namespace Daptrius.Markup
         }
 
         public override string VisitText([NotNull] CmlParser.TextContext context) {
-            return context.TEXT().GetText();
+            return context.GetText();
         }
 
         public override string VisitEntityRef([NotNull] CmlParser.EntityRefContext context) {

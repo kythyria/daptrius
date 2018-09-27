@@ -20,7 +20,7 @@ tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute* ))*;
 shortAttribute : (DOT | HASH) QNAME;
 attribute : QNAME (EQUALS (ATTRVAL_QUOTE olTextNode ATTRVAL_QUOTE|ATTRVAL_BARE))?;
 
-text    : TEXT;
+text    : TEXT+;
 newline : LINE_END LINE_START;
 
 textLine       : (olTextNode | olInlineElement)* LINE_END;
