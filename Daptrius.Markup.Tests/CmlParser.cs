@@ -89,7 +89,6 @@ namespace Daptrius.Markup.Tests
         }
 
         [TestMethod] public void SimplePrologue() => AssertDomMatch();
-        [TestMethod] public void PrologueWithDtd() => AssertDomMatch();
         [TestMethod] public void PrologueWithAttribute() => AssertDomMatch();
 
         void AssertDomMatch([CallerMemberName] string caller = null) {

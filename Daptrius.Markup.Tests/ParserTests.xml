@@ -2,14 +2,10 @@
 <tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions">
   <test name="SimplePrologue" result="true">
     <item><![CDATA[!!! default]]></item>
-    <item><![CDATA[<!DOCTYPE root><root/>]]></item>
-  </test>
-  <test name="PrologueWithDtd" result="true">
-    <item><![CDATA[!!! test]]></item>
-    <item><![CDATA[<!DOCTYPE test-document PUBLIC "test" ""><root/>]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"/>]]></item>
   </test>
   <test name="PrologueWithAttribute" result="true">
     <item><![CDATA[!!! default attr="foo"]]></item>
-    <item><![CDATA[<!DOCTYPE root><root attr="foo"/>]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius" attr="foo"/>]]></item>
   </test>
 </tests>

@@ -40,7 +40,7 @@ namespace Daptrius.Markup {
         }
 
         private string LookupNamespace(string prefix) {
-            var nsuri = _nsm.LookupNamespace(prefix);
+            var nsuri = _nsm.LookupNamespace(prefix ?? "");
             if (nsuri == null) {
                 //TODO: Better error handling
                 throw new Exception("Unspecified namespace!");
@@ -95,11 +95,12 @@ namespace Daptrius.Markup {
                 var attns = i.Value;
                 XmlAttribute att;
                 if (i.Key == "") {
-                    att = _doc.CreateAttribute("xmlns", i.Value);
+                    att = _doc.CreateAttribute("xmlns");
                 }
                 else {
-                    att = _doc.CreateAttribute("xmlns", i.Key, i.Value);
+                    att = _doc.CreateAttribute("xmlns:" + i.Key);
                 }
+                att.Value = i.Value;
                 root.Attributes.Append(att);
             }
             return root;
