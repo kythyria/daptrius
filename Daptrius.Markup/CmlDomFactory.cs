@@ -70,64 +70,9 @@ namespace Daptrius.Markup
             return doc;
         }
 
-        private XmlDocument _doc;
-        private XmlNamespaceManager _nsm;
-        private CmlDtd _dtd;
-
         public virtual void ParseInto(XmlNode parent, TextReader reader) {
-            // This way around so we still get a NPE if there's something else where OwnerDocument is null.
-            _doc = parent as XmlDocument ?? parent.OwnerDocument;
-            _nsm = new XmlNamespaceManager(_doc.NameTable);
-
-            using (var pr = new CmlPrereader(reader)) {
-                var istream = new AntlrInputStream(pr);
-                var lexer = new Grammar.CmlLexer(istream);
-                var ts = new CommonTokenStream(lexer);
-                var parser = new Grammar.CmlParser(ts);
-
-                var parseroot = parser.cmlDocument();
-                var rootres = MakeRootElement(parent, parseroot);
-                var rootelement = rootres.Item1;
-                var dtd = rootres.Item2;
-
-                parent.AppendChild(rootelement);
-            }
-        }
-
-        protected virtual Tuple<XmlNode, CmlDtd> MakeRootElement(XmlNode parent, CmlParser.CmlDocumentContext ctx) {
-            // This way around so we still get a NPE if there's something else where OwnerDocument is null.
-            var doc = parent as XmlDocument ?? parent.OwnerDocument;
-            var prologue = ctx.prologue();
-            if (prologue == null) {
-                // TODO: Better error handling
-                throw new Exception("Missing prologue");
-            }
-
-            var doctypename = ctx.prologue().tagContents().QNAME().GetText();
-            // TODO: Is this a fatal error?
-            var dtd = _loader.LoadDtdByPublicId(doctypename) ?? CmlDtd.Default;
-            var rootElement = doc.CreateElement(dtd.DefaultRootElement);
-            foreach (var i in dtd.DefaultPrefixes) {
-                rootElement.SetAttribute($"xmlns:{i.Key}", i.Value);
-            }
-
-            XmlDocumentType doctype = null;
-            if (doc == parent)
-                //&& !(String.IsNullOrEmpty(dtd.PublicIdentifier) && String.IsNullOrEmpty(dtd.SystemIdentifier)))
-            {
-                doctype = doc.CreateDocumentType(dtd.DefaultRootElement, dtd.PublicIdentifier, dtd.SystemIdentifier, null);
-
-            }
-
-            var av = new AttributeVisitor(doc, dtd);
-            av.AddAttributesTo(rootElement, ctx.prologue().tagContents());
-            
-            var frag = doc.CreateDocumentFragment();
-            if(doctype != null) {
-                frag.AppendChild(doctype);
-            }
-            frag.AppendChild(rootElement);
-            return Tuple.Create((XmlNode)frag, dtd);
+            var loader = new DomFromCmlLoader(_loader.LoadDtdByPublicId, reader, parent);
+            loader.Load();
         }
     }
 }
