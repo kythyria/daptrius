@@ -31,7 +31,7 @@ namespace Daptrius.Markup.Tests
     [DeploymentItem("ParserTests.xml")]
     public class CmlParserTests {
         ICmlLoader _loader;
-        Dictionary<string, string> _rhses = new Dictionary<string, string>();
+        Dictionary<string, XmlDocument> _rhses = new Dictionary<string, XmlDocument>();
         Dictionary<string, bool> _succeedOnEqual = new Dictionary<string, bool>();
 
         XmlDomComparer _comparer = new XmlDomComparer();
@@ -83,7 +83,9 @@ namespace Daptrius.Markup.Tests
                 var items = i.SelectNodes("t:item", xnm);
 
                 loader.Documents[name] = items[0].InnerText;
-                _rhses[name] = items[1]?.InnerText;
+                var rhs = new XmlDocument();
+                rhs.AppendChild(rhs.ImportNode(items[1].ChildNodes[0], true));
+                _rhses[name] = rhs;
                 _succeedOnEqual[name] = i.Attributes["result"].Value == "true";
             }
         }
@@ -91,8 +93,7 @@ namespace Daptrius.Markup.Tests
         void AssertDomMatch([CallerMemberName] string caller = null) {
             var factory = new CmlDomFactory(_loader);
             var lhs = factory.Parse(caller);
-            var rhs = new XmlDocument();
-            rhs.LoadXml(_rhses[caller]);
+            var rhs = _rhses[caller];
 
             var result = _comparer.Equals(lhs, rhs);
             Assert.AreEqual(_succeedOnEqual[caller], result);
