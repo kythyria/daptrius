@@ -88,9 +88,6 @@ namespace Daptrius.Markup.Tests
             }
         }
 
-        [TestMethod] public void SimplePrologue() => AssertDomMatch();
-        [TestMethod] public void PrologueWithAttribute() => AssertDomMatch();
-
         void AssertDomMatch([CallerMemberName] string caller = null) {
             var factory = new CmlDomFactory(_loader);
             var lhs = factory.Parse(caller);
@@ -100,5 +97,19 @@ namespace Daptrius.Markup.Tests
             var result = _comparer.Equals(lhs, rhs);
             Assert.AreEqual(_succeedOnEqual[caller], result);
         }
+
+        [TestMethod] public void SimplePrologue() => AssertDomMatch();
+        [TestMethod] public void PrologueWithAttribute() => AssertDomMatch();
+        [TestMethod] public void OneLineText() => AssertDomMatch();
+        [TestMethod] public void ThreeLinesText() => AssertDomMatch();
+        [TestMethod] public void TwoParagraphs() => AssertDomMatch();
+        [TestMethod] public void NonDefaultDtd() => AssertDomMatch();
+        [TestMethod] public void AstralPlaneEntities() => AssertDomMatch();
+        [TestMethod] public void LiteralBlock() => AssertDomMatch();
+        [TestMethod] public void LongLiteralBlock() => AssertDomMatch();
+        [TestMethod] public void MixedTextAndLiterals() => AssertDomMatch();
+        [TestMethod] public void NonRootElement() => AssertDomMatch();
+        [TestMethod] public void MixedElementText() => AssertDomMatch();
+        [TestMethod] public void NestedElements() => AssertDomMatch();
     }
 }

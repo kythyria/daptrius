@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions">
+<tests xmlns="https://ns.berigora.net/2018/Daptrius/TestDefinitions" xml:white-space="preserve">
   <test name="SimplePrologue" result="true">
     <item><![CDATA[!!! default]]></item>
     <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"/>]]></item>
@@ -7,5 +7,90 @@
   <test name="PrologueWithAttribute" result="true">
     <item><![CDATA[!!! default attr="foo"]]></item>
     <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius" attr="foo"/>]]></item>
+  </test>
+  <test name="OneLineText" result="true">
+    <item><![CDATA[!!! default
+Plain Text
+]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><text-block>Plain Text</text-block></root>]]></item>
+  </test>
+  <test name="ThreeLinesText" result="true">
+    <item><![CDATA[!!!default
+Plain
+Text
+Document]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><text-block>Plain
+Text
+Document</text-block></root>]]></item>
+  </test>
+  <test name="TwoParagraphs" result="true">
+    <item><![CDATA[!!!default
+Some plain text
+And more text
+
+More text
+And even more]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><text-block>Some plain text
+And more text</text-block><text-block>More text
+And even more</text-block></root>]]></item>
+  </test>
+  <test name="NonDefaultDtd" result="true">
+    <item><![CDATA[!!! test]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius/testdtd"/>]]></item>
+  </test>
+  <test name="AstralPlaneEntities" result="true">
+    <item><![CDATA[!!! test
+&bird;&dragon;]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius/testdtd"><textblock>&#x1F426;&#x1F409;</textblock></root>]]></item>
+  </test>
+  <test name="LiteralBlock" result="true">
+    <item><![CDATA[!!! default
+!>literal]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><literal-block>]]>&lt;![CDATA[literal]]&gt;<![CDATA[</literal-block></root>]]></item>
+  </test>
+  <test name="LongLiteralBlock" result="true">
+    <item><![CDATA[!!! default
+!>literal
+!>  with
+!>indentation]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><literal-block>]]>&lt;![CDATA[literal
+  with
+indentation]]&gt;<![CDATA[</literal-block></root>]]></item>
+  </test>
+  <test name="MixedTextAndLiterals" result="true">
+    <item><![CDATA[!!!default
+blah blah
+
+!> newt newt
+normal normal
+!> toot toot
+
+woop woop]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><text-block>blah blah</text-block><literal-block>]]>lt;![CDATA[newt newt]]&gt;<![CDATA[</literal-block><text-block>normal normal</text-block><literal-block>]]>lt;![CDATA[toot toot]]&gt;<![CDATA[</literal-block><text-block>woop woop</text-block></root>]]></item>
+  </test>
+  <test name="NonRootElement" result="true">
+    <item><![CDATA[!!!default
+%foo]]></item>
+    <item><![CDATA[<root xmlns="https://ns.berigora.net/2018/daptrius"><foo/></root>]]></item>
+  </test>
+  <test name="MixedElementText" result="true">
+    <item><![CDATA[!!!default
+%foo
+
+blah
+%bar
+blah
+
+%foo]]></item>
+    <item><![CDATA[<d:root xmlns:d="https://ns.berigora.net/2018/daptrius"><foo/><d:text-block>blah</d:text-block><bar/><d:text-block>blah</d:text-block><foo/></d:root>]]></item>
+  </test>
+  <test name="NestedElements" result="true">
+    <item><![CDATA[!!!default
+%foo
+  %bar
+    %baz
+  %bar
+%foo]]></item>
+    <item><![CDATA[<d:root xmlns:d="https://ns.berigora.net/2018/daptrius"><foo><bar><baz/></bar><bar/></foo><foo/></d:root>]]></item>
   </test>
 </tests>
