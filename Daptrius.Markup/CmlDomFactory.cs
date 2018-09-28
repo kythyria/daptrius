@@ -70,7 +70,15 @@ namespace Daptrius.Markup
             return doc;
         }
 
+        private XmlDocument _doc;
+        private XmlNamespaceManager _nsm;
+        private CmlDtd _dtd;
+
         public virtual void ParseInto(XmlNode parent, TextReader reader) {
+            // This way around so we still get a NPE if there's something else where OwnerDocument is null.
+            _doc = parent as XmlDocument ?? parent.OwnerDocument;
+            _nsm = new XmlNamespaceManager(_doc.NameTable);
+
             using (var pr = new CmlPrereader(reader)) {
                 var istream = new AntlrInputStream(pr);
                 var lexer = new Grammar.CmlLexer(istream);
@@ -113,7 +121,7 @@ namespace Daptrius.Markup
 
             var av = new AttributeVisitor(doc, dtd);
             av.AddAttributesTo(rootElement, ctx.prologue().tagContents());
-
+            
             var frag = doc.CreateDocumentFragment();
             if(doctype != null) {
                 frag.AppendChild(doctype);
@@ -121,104 +129,5 @@ namespace Daptrius.Markup
             frag.AppendChild(rootElement);
             return Tuple.Create((XmlNode)frag, dtd);
         }
-    }
-
-    class AttributeVisitor : CmlParserBaseVisitor<XmlAttribute> {
-        CmlDtd _dtd;
-        XmlDocument _doc;
-        List<XmlAttribute> _attlist = new List<XmlAttribute>();
-        List<string> _classes = new List<string>();
-        bool _idSeen = false;
-
-        public AttributeVisitor(XmlDocument doc, CmlDtd dtd) {
-            _doc = doc;
-            _dtd = dtd;
-        }
-
-        public override XmlAttribute VisitAttribute([NotNull] CmlParser.AttributeContext context) {
-            var attname = context.QNAME().GetText();
-            var attval = context.ATTRVAL_BARE()?.GetText();
-
-            if (attval == null) {
-                var visitor = new TextVisitor(_dtd);
-                attval = visitor.Visit(context.olTextNode());
-            }
-
-            if (attval == null) {
-                attval = _dtd.AttributeTruthyValue;
-            }
-
-            CreateAttribute(attname, attval);
-            return null;
-        }
-
-        private void CreateAttribute(string attname, string attval) {
-            var att = _doc.CreateAttribute(attname);
-            att.Value = attval;
-            _attlist.Add(att);
-        }
-
-        public override XmlAttribute VisitShortAttribute([NotNull] CmlParser.ShortAttributeContext context) {
-            if (context.HASH() != null) {
-                if (!_idSeen) {
-                    CreateAttribute(_dtd.IdAttribute, context.QNAME().GetText());
-                    _idSeen = true;
-                }
-                else {
-                    // TODO: Better exceptions;
-                    throw new Exception("Duplicate ID attribute");
-                }
-            }
-            else if (context.DOT() != null) {
-                _classes.Add(context.QNAME().GetText());
-            }
-            else {
-                // TODO: Better exceptions.
-                throw new Exception("Malformed short attribute");
-            }
-            return null;
-        }
-
-        public void AddAttributesTo(XmlElement el, CmlParser.TagContentsContext ctx) {
-            Visit(ctx);
-
-            if (_classes.Count > 0) {
-                CreateAttribute(_dtd.ClassAttribute, string.Join(' ', _classes));
-            }
-
-            foreach(var i in _attlist) {
-                el.Attributes.Append(i);
-            }
-
-            _attlist = new List<XmlAttribute>();
-            _classes = new List<string>();
-            _idSeen = false;
-        }
-    }
-
-    class TextVisitor : CmlParserBaseVisitor<string> {
-        CmlDtd _dtd;
-
-        public TextVisitor(CmlDtd dtd) {
-            _dtd = dtd;
-        }
-
-        public override string VisitText([NotNull] CmlParser.TextContext context) {
-            return context.GetText();
-        }
-
-        public override string VisitEntityRef([NotNull] CmlParser.EntityRefContext context) {
-            return _dtd.Entities[context.ENTITY_NAME().GetText()];
-        }
-
-        public override string VisitNewline([NotNull] CmlParser.NewlineContext context) {
-            return "\n";
-        }
-
-        protected override string AggregateResult(string aggregate, string nextResult) {
-            return aggregate + nextResult;
-        }
-
-        protected override string DefaultResult => "";
     }
 }
