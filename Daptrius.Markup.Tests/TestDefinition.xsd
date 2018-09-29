@@ -6,13 +6,23 @@
         <xs:element maxOccurs="unbounded" name="test">
           <xs:complexType>
             <xs:sequence>
-              <xs:element minOccurs="1" maxOccurs="unbounded" name="item" type="xs:string" />
+              <xs:element minOccurs="1" maxOccurs="unbounded" name="item"/>
             </xs:sequence>
             <xs:attribute name="name" type="xs:string" use="required" />
-            <xs:attribute name="result" type="xs:boolean" use="required" />
+            <xs:attribute name="result" use="required">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="true"/>
+                  <xs:enumeration value="false"/>
+                  <xs:enumeration value="throws"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:attribute>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
+
+  
 </xs:schema>

@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<t:tests xmlns:t="https://ns.berigora.net/2018/daptrius/TestDefinitions" xmlns:d="https://ns.berigora.net/2018/daptrius" xml:white-space="preserve">
+<t:tests xmlns:t="https://ns.berigora.net/2018/daptrius/testDefinitions" xmlns:d="https://ns.berigora.net/2018/daptrius" xml:white-space="preserve">
   <t:test name="SimplePrologue" result="true">
     <t:item><![CDATA[!!! default]]></t:item>
     <t:item>
@@ -152,15 +152,129 @@ blah
       </d:root>
     </t:item>
   </t:test>
-  <t:test name="ElementWithTextLine">
-    <item><![CDATA[!!!default
-%h1: Title!]]></item>
-    <item>
+  <t:test name="ElementWithTextLine" result="true">
+    <t:item><![CDATA[!!!default
+%h1: Title!]]></t:item>
+    <t:item>
       <d:root>
         <h1>
           <d:text-block>Title!</d:text-block>
         </h1>
       </d:root>
-    </item>
+    </t:item>
+  </t:test>
+  <t:test name="ElementWithAttributes" result="true">
+    <t:item><![CDATA[!!!default
+%foo bar=1awoo baz="roar roar" bat]]></t:item>
+    <t:item>
+      <d:root>
+        <foo bar="1awoo" baz="roar roar" bat="1"/>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="ElementWithId" result="true">
+    <t:item><![CDATA[!!!default
+%foo#one
+%foo #two
+%foo bar #three baz]]></t:item>
+    <t:item>
+      <d:root>
+        <foo xml:id="one"/>
+        <foo xml:id="two"/>
+        <foo bar="1" xml:id="three" baz="1"/>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="ElementWithClass" result="true">
+    <t:item><![CDATA[!!!default
+%foo.one
+%foo .two
+%foo bar .three baz]]></t:item>
+    <t:item>
+      <d:root>
+        <foo class="one"/>
+        <foo class="two"/>
+        <foo bar="1" class="three" baz="1"/>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="ElementWithClassAndId" result="true">
+    <t:item><![CDATA[!!!default
+%foo#four.two
+%foo.one#five
+%foo #six .wibble
+%foo .blorb bat #seven.wibble]]></t:item>
+    <t:item>
+      <d:root>
+        <foo xml:id="four" class="two"/>
+        <foo xml:id="five" class="one"/>
+        <foo xml:id="six" class="wibble"/>
+        <foo bat="1" xml:id="seven" class="blorb wibble"/>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="ElementShorthandAndTextLine" result="true">
+    <t:item><![CDATA[!!!default
+%foo#eight.belfry: zappo]]></t:item>
+    <t:item>
+      <d:root>
+        <foo xml:id="eight" class="belfry">
+          <d:text-block>zappo</d:text-block>
+        </foo>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="AttributeWithPrefix" result="true">
+    <t:item><![CDATA[!!!default
+%h1 xml:lang="en": Title!]]></t:item>
+    <t:item>
+      <d:root>
+        <h1 xml:lang="en">
+          <d:text-block>Title!</d:text-block>
+        </h1>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="NoValueAttributeWithText" result="true">
+    <t:item><![CDATA[!!!default xmlns:z="zorb"
+%h1 bat: Title!
+%h1 z:ubat: Don't do this]]></t:item>
+    <t:item>
+      <d:root xmlns:z="zorb">
+        <h1 bat="1">
+          <d:text-block>Title!</d:text-block>
+        </h1>
+        <h1 z:ubat="1">
+          <d:text-block>Don't do this!</d:text-block>
+        </h1>
+      </d:root>
+    </t:item>
+  </t:test>
+  <t:test name="MixedContentChildren" result="true">
+    <t:item><![CDATA[!!!default
+Blah blah
+blah
+%foo
+  beep beep beep
+  !>  boop
+  !>bop
+  %h1: why
+  zorb
+]]></t:item>
+    <t:item>
+      <d:root>
+        <d:text-block>Blah blah</d:text-block>
+        <d:text-block>blah</d:text-block>
+        <foo>
+          <d:text-block>beep beep beep</d:text-block>
+          <d:literal-block><![CDATA[  boop
+bop]]></d:literal-block>
+          <h1>
+            <d:text-block>why</d:text-block>
+          </h1>
+          <d:text-block>zorb</d:text-block>
+        </foo>
+      </d:root>
+    </t:item>
   </t:test>
 </t:tests>

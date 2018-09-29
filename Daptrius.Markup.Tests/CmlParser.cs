@@ -30,6 +30,7 @@ namespace Daptrius.Markup.Tests
     [TestClass]
     [DeploymentItem("ParserTests.xml")]
     public class CmlParserTests {
+        private const string TestDefinitions = "https://ns.berigora.net/2018/daptrius/testDefinitions";
         ICmlLoader _loader;
         Dictionary<string, XmlDocument> _rhses = new Dictionary<string, XmlDocument>();
         Dictionary<string, bool> _succeedOnEqual = new Dictionary<string, bool>();
@@ -76,7 +77,7 @@ namespace Daptrius.Markup.Tests
             }
 
             var xnm = new XmlNamespaceManager(doc.NameTable);
-            xnm.AddNamespace("t", "https://ns.berigora.net/2018/Daptrius/TestDefinitions");
+            xnm.AddNamespace("t", TestDefinitions);
 
             foreach (XmlNode i in doc.SelectNodes("/t:tests/t:test", xnm)) {
                 var name = i.Attributes["name"].Value;
@@ -112,5 +113,14 @@ namespace Daptrius.Markup.Tests
         [TestMethod] public void NonRootElement() => AssertDomMatch();
         [TestMethod] public void MixedElementText() => AssertDomMatch();
         [TestMethod] public void NestedElements() => AssertDomMatch();
+        [TestMethod] public void ElementWithTextLine() => AssertDomMatch();
+        [TestMethod] public void ElementWithAttributes() => AssertDomMatch();
+        [TestMethod] public void ElementWithId() => AssertDomMatch();
+        [TestMethod] public void ElementWithClass() => AssertDomMatch();
+        [TestMethod] public void ElementWithClassAndId() => AssertDomMatch();
+        [TestMethod] public void ElementShorthandAndTextLine() => AssertDomMatch();
+        [TestMethod] public void AttributeWithPrefix() => AssertDomMatch();
+        [TestMethod] public void NoValueAttributeWithText() => AssertDomMatch();
+        [TestMethod] public void MixedContentChildren() => AssertDomMatch();
     }
 }
