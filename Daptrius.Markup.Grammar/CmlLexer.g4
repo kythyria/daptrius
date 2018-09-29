@@ -56,7 +56,7 @@ HASH          : '#';
 TAG_LINE_END  : LINE_END -> type(LINE_END), popMode;
 TAG_END       : '>'      -> popMode;
 SLASH         : '/';
-COLON         : ':'      -> popMode;
+COLON         : ': '      -> popMode;
 S             : [ \t]+;
 
 mode attrVal;
