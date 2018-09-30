@@ -277,4 +277,46 @@ bop]]></d:literal-block>
       </d:root>
     </t:item>
   </t:test>
+  <t:test name="CommentBlock" result="true">
+    <t:item><![CDATA[!!! default
+!#This is a comment]]></t:item>
+    <t:item>
+      <root xmlns="https://ns.berigora.net/2018/daptrius">
+        <!--This is a comment-->
+      </root>
+    </t:item>
+  </t:test>
+  <t:test name="LongComment" result="true">
+    <t:item><![CDATA[!!! default
+#! Long comment,
+#! split over multiple
+#! lines]]></t:item>
+    <t:item>
+      <root xmlns="https://ns.berigora.net/2018/daptrius">
+        <!-- Long comment
+ split over multiple
+ lines-->
+      </root>
+    </t:item>
+  </t:test>
+  <t:test name="MixedTextComments" result="true">
+    <t:item>
+      <![CDATA[!!!default
+blah blah
+
+!# newt newt
+normal normal
+!# toot toot
+
+woop woop]]></t:item>
+    <t:item>
+      <root xmlns="https://ns.berigora.net/2018/daptrius">
+        <text-block>blah blah</text-block>
+        <!-- newt newt-->
+        <text-block>normal normal</text-block>
+        <!-- toot toot-->
+        <text-block>woop woop</text-block>
+      </root>
+    </t:item>
+  </t:test>
 </t:tests>
