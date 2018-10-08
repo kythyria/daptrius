@@ -16,6 +16,8 @@ namespace Daptrius.Markup {
         private XmlNamespaceManager _nsm;
         private CmlDtd _dtd;
 
+        private readonly LiteralVisitor _lv = new LiteralVisitor();
+
         public DomFromCmlLoader(Func<string, CmlDtd> dtdSource, TextReader cmlSource, XmlNode parentNode = null) {
             _dtdSource = dtdSource;
             _cmlSource = cmlSource;
@@ -34,6 +36,7 @@ namespace Daptrius.Markup {
                 var parseroot = parser.cmlDocument();
                 var rootelement = MakeRootElement(parseroot);
                 _parent.AppendChild(rootelement);
+                ReadElementContent(parseroot.elementContent(), rootelement);
 
                 return rootelement;
             }
@@ -104,6 +107,39 @@ namespace Daptrius.Markup {
                 root.Attributes.Append(att);
             }
             return root;
+        }
+
+        private void ReadElementContent(CmlParser.ElementContentContext ctx, XmlNode parent) {
+            for (int i = 0; i < ctx.ChildCount; i++) {
+                var c = ctx.GetChild(i);
+                if(c is CmlParser.CommentBlockContext cb) {
+                    var contents = _lv.Visit(cb);
+                    var cn = _doc.CreateComment(contents);
+                    parent.AppendChild(cn);
+                }
+                else if(c is CmlParser.CdataBlockContext cd) {
+                    var contents = _lv.Visit(cd);
+                    var cn = _doc.CreateCDataSection(contents);
+
+                    var nameparts = _dtd.LiteralBlockElement.Split(':', 2);
+                    var prefix = nameparts.Length == 2 ? nameparts[0] : "";
+                    var localpart = nameparts.Length == 2 ? nameparts[1] : nameparts[0];
+                    // TODO: Better error handling (here or when building/loading a DTD?)
+                    // Probably the latter, though it means we need a builder.
+                    var nsuri = _dtd.DefaultPrefixes[prefix];
+                    var contextualprefix = _nsm.LookupPrefix(nsuri);
+                    var el = _doc.CreateElement(prefix, localpart, nsuri);
+
+                    el.AppendChild(cn);
+                    parent.AppendChild(el);
+                }
+                else if (c is CmlParser.BlankLineContext) {
+                    // Don't need to do anything here
+                }
+                else {
+                    throw new NotImplementedException();
+                }
+            }
         }
     }
 

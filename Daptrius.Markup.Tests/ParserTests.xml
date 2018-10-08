@@ -300,8 +300,7 @@ bop]]></d:literal-block>
     </t:item>
   </t:test>
   <t:test name="MixedTextComments" result="true">
-    <t:item>
-      <![CDATA[!!!default
+    <t:item><![CDATA[!!!default
 blah blah
 
 !# newt newt
@@ -316,6 +315,17 @@ woop woop]]></t:item>
         <text-block>normal normal</text-block>
         <!-- toot toot-->
         <text-block>woop woop</text-block>
+      </root>
+    </t:item>
+  </t:test>
+  <t:test name="XmlnsCanPostcedeItsUse" result="true">
+    <t:item><![CDATA[!!!default
+%foo xmlns:bar="barbar" bar:att
+%foo bar:att xmlns:bar="barbar"]]></t:item>
+    <t:item>
+      <root xmlns="https://ns.berigora.net/2018/daptrius" xmlns:bar="barbar">
+        <foo bar:att="1"/>
+        <foo bar:att="1"/>
       </root>
     </t:item>
   </t:test>

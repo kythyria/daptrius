@@ -125,5 +125,6 @@ namespace Daptrius.Markup.Tests
         [TestMethod] public void CommentBlock() => AssertDomMatch();
         [TestMethod] public void LongComment() => AssertDomMatch();
         [TestMethod] public void MixedTextComments() => AssertDomMatch();
+        [TestMethod] public void XmlnsCanPostcedeItsUse() => AssertDomMatch();
     }
 }

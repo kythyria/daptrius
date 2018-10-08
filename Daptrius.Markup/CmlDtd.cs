@@ -7,6 +7,10 @@ namespace Daptrius.Markup {
     /// <summary>
     /// The settings required to expand a CML document into a DOM.
     /// </summary>
+    /// <remarks>
+    /// Note that all of the things that specify a name are interpreted using
+    /// <see cref="DefaultPrefixes"/>.
+    /// </remarks>
     public class CmlDtd {
 
         /// <summary>
