@@ -14,7 +14,7 @@ commentLine : COMMENT_START LITERAL_TEXT LINE_END;
 cdataBlock : cdataLine+;
 cdataLine : CDATA_START LITERAL_TEXT LINE_END;
 
-elementBlock : ELEMENT_START tagContents (COLON olTextLine? | COLON? LINE_END (INDENT elementContent (OUTDENT|EOF)))?;
+elementBlock : ELEMENT_START tagContents (COLON olTextLine? | COLON? LINE_END (INDENT elementContent (OUTDENT|EOF)) | LINE_END | EOF);
 
 tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute* ))*;
 shortAttribute : (DOT | HASH) QNAME;
