@@ -133,6 +133,9 @@ namespace Daptrius.Markup {
                     el.AppendChild(cn);
                     parent.AppendChild(el);
                 }
+                else if (c is CmlParser.ElementBlockContext eb) {
+
+                }
                 else if (c is CmlParser.BlankLineContext) {
                     // Don't need to do anything here
                 }

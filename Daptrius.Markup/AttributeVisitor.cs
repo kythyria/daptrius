@@ -52,7 +52,7 @@ namespace Daptrius.Markup
 
             if (attval == null) {
                 var visitor = new TextVisitor(_dtd);
-                attval = visitor.Visit(context.olTextNode());
+                attval = visitor.Visit(context.textNode());
             }
 
             if (attval == null) {

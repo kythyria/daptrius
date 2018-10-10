@@ -288,12 +288,12 @@ bop]]></d:literal-block>
   </t:test>
   <t:test name="LongComment" result="true">
     <t:item><![CDATA[!!! default
-#! Long comment,
-#! split over multiple
-#! lines]]></t:item>
+!# Long comment,
+!# split over multiple
+!# lines]]></t:item>
     <t:item>
       <root xmlns="https://ns.berigora.net/2018/daptrius">
-        <!-- Long comment
+        <!-- Long comment,
  split over multiple
  lines-->
       </root>
