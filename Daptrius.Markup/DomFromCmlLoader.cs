@@ -134,7 +134,20 @@ namespace Daptrius.Markup {
                     parent.AppendChild(el);
                 }
                 else if (c is CmlParser.ElementBlockContext eb) {
+                    _nsm.PushScope();
 
+                    var el = MakeElement(eb.tagContents());
+                    parent.AppendChild(el);
+
+                    if (eb.olTextLine() != null) {
+                        throw new NotImplementedException();
+                        //ReadSingleTextLine(eb.olTextLine(), el);
+                    }
+                    else if (eb.elementContent() != null) {
+                        ReadElementContent(eb.elementContent(), el);
+                    }
+
+                    _nsm.PopScope();
                 }
                 else if (c is CmlParser.BlankLineContext) {
                     // Don't need to do anything here

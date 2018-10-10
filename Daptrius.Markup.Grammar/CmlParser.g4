@@ -16,7 +16,7 @@ cdataLine : CDATA_START LITERAL_TEXT LINE_END;
 
 elementBlock : ELEMENT_START tagContents (COLON olTextLine? | COLON? LINE_END (INDENT elementContent (OUTDENT|EOF)) | LINE_END | EOF);
 
-tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute* ))*;
+tagContents : QNAME S? shortAttribute* (S (attribute | shortAttribute+ ))*;
 shortAttribute : (DOT | HASH) QNAME;
 attribute : QNAME (EQUALS (ATTRVAL_QUOTE textNode ATTRVAL_QUOTE|ATTRVAL_BARE))?;
 

@@ -60,17 +60,17 @@ COLON         : ': '      -> popMode;
 S             : [ \t]+;
 
 mode attrVal;
-ATTRVAL_BARE   : NameChar+;
-ATTRVAL_QUOTE : '\''       -> pushMode(attrVal_squote);
-ATTRVAL_DQUOTE : '"'       -> type(ATTRVAL_QUOTE), pushMode(attrVal_dquote);
+ATTRVAL_BARE   : NameChar+ -> popMode;
+ATTRVAL_QUOTE : '\''       -> mode(attrVal_squote);
+ATTRVAL_DQUOTE : '"'       -> type(ATTRVAL_QUOTE), mode(attrVal_dquote);
 
 mode attrVal_squote;
-ATTRVAL_SQUOTE_TERM : '\''      -> type(ATTRVAL_QUOTE), popMode, popMode;
+ATTRVAL_SQUOTE_TERM : '\''      -> type(ATTRVAL_QUOTE), popMode;
 ATTRVAL_SQUOTE_TEXT : (~[\n'])+ -> type(TEXT);
 ATTRVAL_SQUOTE_ENTR : '&'       -> type(ENTITY_START), pushMode(entref);
 
 mode attrVal_dquote;
-ATTRVAL_DQUOTE_TERM : '"'       -> type(ATTRVAL_QUOTE), popMode, popMode;
+ATTRVAL_DQUOTE_TERM : '"'       -> type(ATTRVAL_QUOTE), popMode;
 ATTRVAL_DQUOTE_TEXT : (~[\n"])+ -> type(TEXT);
 ATTRVAL_DQUOTE_ENTR : '&'       -> type(ENTITY_START), pushMode(entref);
 

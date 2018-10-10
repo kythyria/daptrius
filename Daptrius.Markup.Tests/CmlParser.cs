@@ -102,6 +102,7 @@ namespace Daptrius.Markup.Tests
 
         [TestMethod] public void SimplePrologue() => AssertDomMatch();
         [TestMethod] public void PrologueWithAttribute() => AssertDomMatch();
+        [TestMethod] public void PrologueWithMultiAttribute() => AssertDomMatch();
         [TestMethod] public void OneLineText() => AssertDomMatch();
         [TestMethod] public void ThreeLinesText() => AssertDomMatch();
         [TestMethod] public void TwoParagraphs() => AssertDomMatch();

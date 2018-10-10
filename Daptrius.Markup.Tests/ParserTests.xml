@@ -12,6 +12,12 @@
       <root xmlns="https://ns.berigora.net/2018/daptrius" attr="foo"/>
     </t:item>
   </t:test>
+  <t:test name="PrologueWithMultiAttribute" result="true">
+    <t:item><![CDATA[!!! default attr="foo" bar="bat"]]></t:item>
+    <t:item>
+      <root xmlns="https://ns.berigora.net/2018/daptrius" attr="foo" bar="bat"/>
+    </t:item>
+  </t:test>
   <t:test name="OneLineText" result="true">
     <t:item><![CDATA[!!! default
 Plain Text
