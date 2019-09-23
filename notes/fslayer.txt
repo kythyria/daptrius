@@ -1,0 +1,38 @@
+Every file is made of forks/streams/attributes. They have types:
+    Data
+        Raw data. The server doesn't *particularly* care what's in here, except to implement PATCH or SEARCH.
+    Names
+        Collection of *this file's* directory entries, pointing at the files which it's to be indexed by. Unlike most FSes, this includes a sort key.
+    Index
+        Essentially, a listing of all the files which have a Names of a particular name pointing at this file.
+    SecurityDescriptor
+        Data specifying the security of a file, eg, access control.
+    Reparse
+        Used for redirect-by-URL and to mount special pages.
+    KeyValues
+        Key/value pairs. Keys are strings, values are JSON.
+    RecordList
+        Ordered list of JSON values.
+
+Names and Index are automatically updated when their counterparts are (and you can use BIND/DELETE/MOVE/COPY/PUT/etc to do this). The mapping is stored in volume metadata so that nice names can be had. Any of these can probably be versioned, or at least emit an event to be placed in the changelog.
+
+KeyValues, RecordList and DirectoryIndex are paginated in a HTTP access model. CBOR might be superior for binary tolerance.
+
+VolumeInfo might look like:
+{
+    indexes: [
+        { id: 0, name: "Subpages",               filenames: true,  index_attribute: "children", entry_attribute: "parents" },
+        { id: 1, name: "Categories",             filenames: false, index_attribute: "categoryMembers", entry_attribute: "categories" },
+        { id: 2, name: "Maintenance Categories", filenames: false, index_attribute: "flaggedPages", entry_attribute: "maintenanceFlags" }
+    ],
+    data_attribute: "data",
+    path_index: 0,
+    security_attribute: "acl"
+}
+
+path_index shows which index forms conventional file paths. data_attribute shows what GETting a URL that doesn't include an attribute name.
+
+Attributes are selected by querystring: ?attr=name
+If you don't specify any for a GET, the attribute named in data_attribute is used and moreover the server can return whatever it believes will provoke a sensible display in that UA, provided it doesn't refer back to the same URL in the hopes of getting a different response.
+
+Attributes are linearly versioned: Each time the attribute is modified, a new revision is created. The "published version" of each attribute is also tracked: the version which is examined by default (maybe).

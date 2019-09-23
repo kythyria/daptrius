@@ -1,0 +1,181 @@
+Page is
+    Title
+    Slug
+    Parent
+    Owner
+    ACL
+    Revisions
+    PublishedRevision
+
+    Has computed
+        Path
+        EffectiveAcl
+
+PageRevision is
+    Timestamp
+    Submitter
+    Body
+    Categories
+
+    Has computed
+        ComponentsReferenced
+
+Permissions
+    View
+    Edit
+    SetPermissions
+    DeleteOldVersions
+    CreateChild
+    RenameChild // Rename in same folder. Move between folders requires delete in the source and create in the destination
+    DeleteChild
+    DeleteThis
+
+AclEntry : enum
+    Inherit
+    Grant(Authorization, Permissions)
+    Deny(Authorization, Permissions)
+
+Authorization
+    GlobalPermissions
+    GrantedTo : AuthenticationIdentityString
+
+PageComponent is
+    RenderComponent : React.Component
+    EditComponent : CKEditor.CustomElement
+
+Basic formats wanted:
+    Link
+    Bold
+    Italic
+    Underline
+    Strike
+    Spoiler
+    Heading 1..7
+    ImageRef
+    Blockquote
+    Code
+
+The authentication subsystem knows about the linkage between cookies, AuthenticationIdentityStrings, and Discord. It's also responsible for fetching names and icons.
+
+Notifications have to live... somewhere. Probably a bot subsystem feeds the auth subsystem with data from Discord and generates notifs. Eventually it'll have to
+live in a different app once the bot framework starts crystallising.
+
+App should generate a server-side UI for read. To allow maximum caching, JS fills in the "you are logged in" text and edit buttons. All editing be JS, React?
+React for most of the UI, CKEditor for the actual rich text part.
+
+Generate sane oembed (but only if world-viewable, or should we have a separate permission?)
+
+Editing API should follow RESTful conventions, possibly even webdav subset! (but delta-v is not exactly simple).
+
+GET and PUT the page URLs with appropriate headers to edit
+GET ?tab=metadata for a page's stats as human-readable?
+
+Edit each individual thing by PATCH /page or by PUT the metadata querystring?
+
+?tab=rendered
+    Default. Rendered with layout and everything
+?tab=body
+    Just the markup you'd pass to CKEditor. If we support files, the raw file.
+?tab=stats
+    Stats (widget tree, etc). Possibly can't write (all of) this one.
+?tab=acl
+    Access control information
+?tab=history
+    List revisions
+
+How to divide up between "static" pages served with SSR, and things that are genuine server-side?
+
+Presumably actual static files are just mixed in (and you can't have a page by that name at all). Then everything is SSR except for, IDK, /API
+
+/api/whoami
+/api/session/destroy
+/api/session/new
+/api/page/:id/data GET/PUT/PATCH
+/api/page/:id/stats GET
+/api/page/:id/acl GET/PUT
+/api/page/:id/delete POST
+/api/page/:id/move
+
+Or we could do a mangled webdav (eg, json instead of xml) for accessing nearly everything. Still need /api, but for less.
+
+PROPFIND
+PROPPATCH
+    view/edit the metadata on a thing (possibly recursively, ie, this covers stat, touch, chown, ls, etc)
+DELETE
+    delete, duh
+MOVE
+    atomically unbind from present location and bind elsewhere
+PUT
+    write to resource
+GET
+    retrieve view of resource
+RAWGET
+    retrieve resource content in a form suitable for editing and PUTing
+
+Notice that MKCOL is missing: everything is a collection.
+
+Categorisation is awkward, though. BIND is missing because hardlinks are actually often ew (the main reason for hardlinky behaviour is to reliably infer when you were redirected, ala mediawiki).
+
+So we don't do that, instead have redirects and catalogue references. Catrefs work like tags/categories, appear in PROPFIND for the tag-ee, and probably have a bit of metadata themselves. TODO: How do they appear in PROPFIND of the tag?
+
+MKREDIRECT
+    Creates a redirect at that URL. RAWGET and PUT manipulate the target. TODO: Should this just be PUT a special mimetype, ala windows .lnk and linux .desktop? Perhaps yes.
+
+Do we use PROPPATCH or a dedicated method for catrefs?
+
+BIND is easy once we have redirects though (supporting both redirect to URI and redirect to ID is harder). Just have a flag whether this is a redirect or a hardlink. Probably need a "break hardlink" function though (COPY from self to self?)
+
+It's ACLs that are hard. We could go the Windows route: ACLs are on resources, not bindings, ACEs have "inheritable" and "inherited" flags, and an "inherit" entry that's only heeded on recalculate (which happens on create or explicit request). On recalculate, delete the inherited ACEs and replace them with with copies of the inheritable ones from the parent.
+
+Ideally, factor that out far enough that it's little change to everything else to just have an Edit privilege and no ACL at all.
+
+So.
+
+WikiWikiFS.
+
+Resources have contents (which keep a revision history) and directory entries. They also have a canonical directory entry.
+
+Resource contents have metadata (what webdav calls dead properties) and body.
+
+Directory entries can be hard, soft, or catalogue. They have a slug, a referent, and a sort key.
+
+Hard entries create a new name for a resource.
+Soft entries create a new name for a resource *or* for a URI. They generate a 3xx when GETted.
+Catalogue entries don't create a name, they just appear in listings. Since DAV-oid listings can have absolute URLs, no problem there.
+
+PROPPATCH can use an existing JSON patch mechanism if we use JSON. Eg, RFC 7396 is adequate if we treat all listy properties as atoms. Or define something custom that doesn't recurse, eg a profile of RFC 6902.
+
+What should Depth: Infinity do about catalogue entries? Should catalogue entries be a live prop? How do you paginate those? Should we use graphql for this? How would graphql handle it? Should catalogue entries use REPORT instead?
+
+You can't get transitive category members in most wikis, let's not bother. Depth: Infinity omits catalogue entries (maybe have a REPORT for that?)
+
+How to paginate? Count header? Thereafter get a cursor URL in the response? Yeah. Count is a hint, of course. The server might return more or less.
+
+Count should also be accepted as a query parameter for ease of SSR.
+
+Is webdav a bad model? We could look at an object as having ADSes. Forbid names from starting with, say, a colon. Using querystrings could work, but interferes with other uses for those. We could have several ADSes/forks:
+    :data         Data            Page contents, no rendering.
+    :properties   Keyvalues       Metadata, etc (ie, PROPFIND)
+    :children     Directory       Children ala MW subpages, directories, etc
+    :catmembers   Directory       Pages that refer to this page as a category
+    :description  Data            Reserved for future use with file uploads
+    :parents      DirectoryEntry  Pages whose :children mention this one (either as a redirect-by-id or as a hardlink)
+    :categories   DirectoryEntry  Pages this one is referring to as a category
+    :permissions  ACL             Permissions, of course.
+
+You can PATCH certainly :properties and probably :children and :catmembers. Those three are also potentially paginated. Pagination like
+
+interface ResultPage<T> {
+    next?: URI;
+    previous?: URI;
+    pagesize: integer;
+    total: integer;
+    items: T[];
+}
+
+next and previous URIs probably *do* use a querystring.
+
+We can note that each of these forks has a type: :data and :description are... data. :properties is key-value pairs. :children and :catmembers are directory. You can treat directory like KVP somewhat, but the system knows things like how to do the reverse query (and the sort order).
+
+Have an ACL type? Or would that just be a suitable mimetype for a Data.
+
