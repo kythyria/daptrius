@@ -1,0 +1,7 @@
+GET /:volume/*
+    retrieve some representation of the file as a whole, or a redirect.
+GET /:volume/*?attr=:val
+    retrieve a representation of the specific attribute. Might include Link headers for pagination.
+PUT /:volume/*?attr=:val
+    Overwrite the attribute
+PATCH

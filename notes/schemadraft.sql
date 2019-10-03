@@ -6,39 +6,19 @@
 create table filesets(
     id               INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     name             VARCHAR(63) NOT NULL,
-    root_inode       INTEGER     NOT NULL REFERENCES inodes,
-    default_security INTEGER     NOT NULL REFERENCES descriptors,
+    root_inode       INTEGER     NOT NULL REFERENCES inodes
 
     UNIQUE(name)
-);
-
--- Indexes manifest as pairs of INDEX/NAMES attributes. Which ones you can have is specified at the
--- fileset level. They provide subpage and category functions. Depending on the flavour, they may
--- logically exist on the container or the contents; filesystem-like behaviour is the former, wiki-
--- category-like behaviour is the latter (this mainly influences security processing).
-create table indexes(
-    id               INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    fileset          INTEGER     NOT NULL REFERENCES filesets,
-    container_name   VARCHAR(63) NOT NULL,
-    namelist_name    VARCHAR(63) NOT NULL,
-    logically_on     ENUM('container', 'member') NOT NULL,
-    important_names  BOOLEAN     NOT NULL,
-
-    CHECK (container_name != namelist_name),
-    UNIQUE(container_name),
-    UNIQUE(namelist_name),
 );
 
 -- An inode is a file. Not its names, just the file itself.
 create table inodes(
     id                 INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     fileset            INTEGER     NOT NULL REFERENCES filesets,
-    created_by         INTEGER     NOT NULL REFERENCES principals,
-    created_at         TIMESTAMP   NOT NULL,
-    last_modified_by   INTEGER     NOT NULL REFERENCES principals,
-    last_modified_at   TIMESTAMP   NOT NULL,
+    revision           INTEGER     NOT NULL REFERENCES inode_revisions
     change_description TEXT        NOT NULL,
-    display_name       TEXT        NOT NULL
+    display_name       TEXT        NOT NULL,
+    protection         ENUM('unprotected', 'protected', 'immutable') NOT NULL
 );
 
 -- Lists which dirent to use to create a canonical URL or breadcrumbs or whatever.
@@ -55,41 +35,88 @@ create table canonical_dirents (
 create table dirents(
     id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     directory   INTEGER     NOT NULL REFERENCES inode,
-    index       INTEGER     NOT NULL REFERENCES indexes,
-    index_attr  INTEGER     NOT NULL REFERENCES index_attributes, -- these two don't need to exist. they're just for constraints.dsdsdsd
-    name_attr   INTEGER     NOT NULL REFERENCES name_attributes,
     slug        VARCHAR     NOT NULL,
     sort_key    VARCHAR     NOT NULL, 
     target_node INTEGER              REFERENCES inode,
     target_url  TEXT,
-    kind ENUM('hard', 'soft', 'url') NOT NULL,
+    index_type  ENUM('category', 'directory') NOT NULL,
+    kind        ENUM('hard', 'soft', 'url')   NOT NULL,
 
     CHECK((kind = 'url') != (target_url IS NULL)),
-    UNIQUE(index, directory, slug)
+    UNIQUE(index_type, directory, slug)
 );
 
 --------------------
 -- Content tables --
 --------------------
 
+-- Types of attribute.
+create type attribute_type ENUM(
+    'binary',     -- binary data
+    'text',       -- indexed plain text or markup
+    'keyvalues',  -- key-value pairs, key is string, value is json
+    'descriptor', -- TODO: What is this? JSONB?
+    'index',      -- Unused (all such are virtual, provided by the app)
+    'names'       -- Unused (ditto)
+);
+
 -- Base table for attributes. 
 create table attributes(
     id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    inode       INTEGER NOT NULL REFERENCES inodes,
-    name        VARCHAR NOT NULL,
-    type        ENUM('data', 'keyvalues', 'descriptor', 'index', 'names'),
+    inode       INTEGER        NOT NULL REFERENCES inodes,
+    name        VARCHAR        NOT NULL,
+    type        attribute_type NOT NULL,
 
-    UNIQUE(inode, name)
+    UNIQUE(inode, name),
+    UNIQUE(id, type)
+    CHECK( name NOT IN ('children', 'category-members','parents', 'categories') ),
+    CHECK( type NOT IN ('index', 'names') )
 );
 
--- A big blob of data. Stored out of line just in case we decide that a gargantuan size limit is
--- fine and someone uses a Range header or TUS.
-create table data_attributes(
-    id INTEGER NOT NULL REFERENCES attributes,
-    type INTEGER NOT NULL REFERENCES attribute_types DEFAULT 'data'
+-- A blob of data. The actual data should really be outside the filesystem, but postgres docs say
+-- not to worry below a few megabytes. Also TODO: full-text search.
+create table binary_attributes(
+    id       INTEGER        NOT NULL REFERENCES attributes,
+    type     attribute_type NOT NULL DEFAULT 'binary',
+    mime     TEXT           NOT NULL,
+    data     BYTEA,
       
+    FOREIGN KEY (id, type) references attributes (id, type),
+    CHECK (attribute_type = 'binary')
 );
 
-create table keyvalues_attributes();
-create table keyvalues_records();
-create table descriptors();
+create table text_attributes(
+    id          INTEGER        NOT NULL REFERENCES attributes,
+    type        attribute_type NOT NULL DEFAULT 'text',
+    mime        TEXT           NOT NULL,
+    data        TEXT           NOT NULL,
+    search_data TEXT           NOT NULL,
+    
+    FOREIGN KEY (id, type) references attributes (id, type),
+    CHECK (attribute_type = 'text')
+)
+
+-- Key-value pairs. We don't use HSTORE here because we want to paginate, and it'll be expensive
+-- to do revision control underneath.
+create table keyvalue_attributes(
+    id   INTEGER        NOT NULL REFERENCES attributes PRIMARY KEY,
+    type attribute_type NOT NULL DEFAULT 'keyvalues',
+
+    FOREIGN KEY (id, type) references attributes (id, type),
+    CHECK (attribute_type = 'keyvalues'),
+);
+
+create table keyvalue_entries(
+    attribute INTEGER NOT NULL REFERENCES keyvalue_attributes,
+    key       TEXT    NOT NULL,
+    value     JSONB   NOT NULL
+);
+
+--------------
+-- Security --
+--------------
+
+create table principals (
+    id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    handle      TEXT     
+);

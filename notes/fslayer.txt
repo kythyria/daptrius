@@ -36,3 +36,5 @@ Attributes are selected by querystring: ?attr=name
 If you don't specify any for a GET, the attribute named in data_attribute is used and moreover the server can return whatever it believes will provoke a sensible display in that UA, provided it doesn't refer back to the same URL in the hopes of getting a different response.
 
 Attributes are linearly versioned: Each time the attribute is modified, a new revision is created. The "published version" of each attribute is also tracked: the version which is examined by default (maybe).
+
+No need for stat() when you can just have an attribute with that information in it.
