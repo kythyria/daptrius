@@ -1,122 +1,83 @@
------------------------
--- Structure tables. --
------------------------
+-- This needs PG 12 for the GENERATED columns.
 
--- A fileset is a top-level grouping of files, similar to a normal namespace in Mediawiki.
-create table filesets(
-    id               INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    name             VARCHAR(63) NOT NULL,
-    root_inode       INTEGER     NOT NULL REFERENCES inodes
+CREATE SCHEMA wiki;
 
-    UNIQUE(name)
+CREATE TYPE wiki.dirent_type    ENUM('hard', 'soft', 'url');
+CREATE TYPE wiki.index_type     ENUM('category', 'directory');
+CREATE TYPE wiki.attribute_type ENUM('data', 'atom', 'keyvalues');
+CREATE TYPE wiki.search_data    TEXT
+
+CREATE TABLE wiki.volumes (
+    id           INTEGER     PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    name         VARCHAR(63) NOT NULL,
+    root_inode   INTEGER     NOT NULL    REFERENCES wiki.inodes
 );
 
--- An inode is a file. Not its names, just the file itself.
-create table inodes(
-    id                 INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    fileset            INTEGER     NOT NULL REFERENCES filesets,
-    revision           INTEGER     NOT NULL REFERENCES inode_revisions
-    change_description TEXT        NOT NULL,
-    display_name       TEXT        NOT NULL,
-    protection         ENUM('unprotected', 'protected', 'immutable') NOT NULL
+CREATE TABLE wiki.inodes (
+    id           INTEGER      PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    volume       INTEGER      NOT NULL    REFERENCES wiki.volumes,
+    title        VARCHAR(127) NOT NULL, -- It's good enough for Darwin, it's good enough for you.
+    canonical    INTEGER      NOT NULL    REFERENCES wiki.dirents
 );
 
--- Lists which dirent to use to create a canonical URL or breadcrumbs or whatever.
-create table canonical_dirents (
-    index  INTEGER NOT NULL REFERENCES indexes,
-    inode  INTEGER NOT NULL REFERENCES inodes,
-    dirent INTEGER NOT NULL REFERENCES dirents,
-    UNIQUE(index, inode)
+CREATE TABLE wiki.dirents(
+    id           INTEGER          PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    container    INTEGER          NOT NULL    REFERENCES wiki.inodes,
+    entry_type   wiki.dirent_type NOT NULL,
+    index_type   wiki.index_type  NOT NULL,
+    target_node  INTEGER                      REFERENCES wiki.inodes,
+    target_url   VARCHAR,
+    slug         VARCHAR(63)      NOT NULL,
+    sort_key     VARCHAR          NOT NULL,
+
+    UNIQUE(container,slug),
+    CHECK((target_url IS NOT NULL) = (type = 'url')),
+    CHECK((target_node IS NOT NULL) = (type != 'url'))
 );
 
--- A dirent is the name of a file, or membership in a category, or the like. Hard dirents are just
--- regular hardlinks. Soft and URL ones generate a 3xx when viewed through HTTP, differing on their
--- means for determining the Location.
-create table dirents(
-    id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    directory   INTEGER     NOT NULL REFERENCES inode,
-    slug        VARCHAR     NOT NULL,
-    sort_key    VARCHAR     NOT NULL, 
-    target_node INTEGER              REFERENCES inode,
-    target_url  TEXT,
-    index_type  ENUM('category', 'directory') NOT NULL,
-    kind        ENUM('hard', 'soft', 'url')   NOT NULL,
+-- These three tables implement a table inheritance scheme such that attribute names are unique per inode,
+-- and each attribute is of one type.
 
-    CHECK((kind = 'url') != (target_url IS NULL)),
-    UNIQUE(index_type, directory, slug)
+CREATE TABLE wiki.attributes(
+    id           INTEGER             PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    inode        INTEGER             NOT NULL    REFERENCES wiki.inodes,
+    name         VARCHAR(63)         NOT NULL,
+    type         wiki.attribute_type NOT NULL,
+    search_data  wiki.search_data    NOT NULL,
+
+    UNIQUE(inode, name), -- Names are unique per inode
+    UNIQUE(id, type),    -- pgsql 12 docs § 5.4.5 "A foreign key must reference columns that either are a primary key or form a unique constraint."
+    CHECK( name NOT IN ('children', 'category-members','parents', 'categories') ) -- These are virtual in the application.
 );
 
---------------------
--- Content tables --
---------------------
+CREATE TABLE wiki.data_attributes(
+    id           INTEGER             PRIMARY KEY REFERENCES wiki.attributes (id),
+    type         wiki.attribute_type NOT NULL    REFERENCES wiki.attributes (type) GENERATED ALWAYS AS ('data') STORED,
+    path         TEXT                NOT NULL,
+    content_type TEXT                NOT NULL,
 
--- Types of attribute.
-create type attribute_type ENUM(
-    'binary',     -- binary data
-    'text',       -- indexed plain text or markup
-    'keyvalues',  -- key-value pairs, key is string, value is json
-    'descriptor', -- TODO: What is this? JSONB?
-    'index',      -- Unused (all such are virtual, provided by the app)
-    'names'       -- Unused (ditto)
+    FOREIGN KEY (id, type) REFERENCES wiki.attributes (id, type),
+    CHECK (type = 'data')
 );
 
--- Base table for attributes. 
-create table attributes(
-    id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    inode       INTEGER        NOT NULL REFERENCES inodes,
-    name        VARCHAR        NOT NULL,
-    type        attribute_type NOT NULL,
+CREATE TABLE wiki.atom_attributes(
+    id           INTEGER             PRIMARY KEY REFERENCES wiki.attributes (id),
+    type         wiki.attribute_type NOT NULL    REFERENCES wiki.attributes (type) GENERATED ALWAYS AS ('atom') STORED,
+    content      TEXT                NOT NULL, -- should this be always json?
+    content_type TEXT                NOT NULL,
 
-    UNIQUE(inode, name),
-    UNIQUE(id, type)
-    CHECK( name NOT IN ('children', 'category-members','parents', 'categories') ),
-    CHECK( type NOT IN ('index', 'names') )
+    FOREIGN KEY (id, type) REFERENCES wiki.attributes (id, type),
+    CHECK (type = 'atom')
 );
 
--- A blob of data. The actual data should really be outside the filesystem, but postgres docs say
--- not to worry below a few megabytes. Also TODO: full-text search.
-create table binary_attributes(
-    id       INTEGER        NOT NULL REFERENCES attributes,
-    type     attribute_type NOT NULL DEFAULT 'binary',
-    mime     TEXT           NOT NULL,
-    data     BYTEA,
-      
-    FOREIGN KEY (id, type) references attributes (id, type),
-    CHECK (attribute_type = 'binary')
+
+CREATE TABLE wiki.keyvalue_attributes(
+    id           INTEGER             PRIMARY KEY REFERENCES wiki.attributes (id) ,
+    type         wiki.attribute_type NOT NULL    REFERENCES wiki.attributes (type) GENERATED ALWAYS AS ('keyvalues') STORED,
 );
 
-create table text_attributes(
-    id          INTEGER        NOT NULL REFERENCES attributes,
-    type        attribute_type NOT NULL DEFAULT 'text',
-    mime        TEXT           NOT NULL,
-    data        TEXT           NOT NULL,
-    search_data TEXT           NOT NULL,
-    
-    FOREIGN KEY (id, type) references attributes (id, type),
-    CHECK (attribute_type = 'text')
-)
-
--- Key-value pairs. We don't use HSTORE here because we want to paginate, and it'll be expensive
--- to do revision control underneath.
-create table keyvalue_attributes(
-    id   INTEGER        NOT NULL REFERENCES attributes PRIMARY KEY,
-    type attribute_type NOT NULL DEFAULT 'keyvalues',
-
-    FOREIGN KEY (id, type) references attributes (id, type),
-    CHECK (attribute_type = 'keyvalues'),
-);
-
-create table keyvalue_entries(
-    attribute INTEGER NOT NULL REFERENCES keyvalue_attributes,
-    key       TEXT    NOT NULL,
-    value     JSONB   NOT NULL
-);
-
---------------
--- Security --
---------------
-
-create table principals (
-    id          INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-    handle      TEXT     
+CREATE TABLE wiki.keyvalue_entries(
+    attribute    INTEGER NOT NULL REFERENCES wiki.keyvalue_attributes(id),
+    key          TEXT    NOT NULL,
+    value        JSONB   NOT NULL, -- TODO: Should this be text?
 );
