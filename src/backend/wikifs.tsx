@@ -1,9 +1,9 @@
 import * as stream from 'stream';
 
-type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
-type Principal = string;
+export type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
+export type Principal = string;
 
-interface Volume {
+export interface Volume {
     label : string;
     type  : "wiki";
     rootInode : Promise<Inode>;
@@ -11,11 +11,11 @@ interface Volume {
     resolveInode(inodeId: string) : Promise<Inode>;
 };
 
-interface UnlockedVolume extends Volume {
+export interface UnlockedVolume extends Volume {
     beginNewVersion(principal: Principal) : Promise<WriteableVolume>;
 }
 
-interface WriteableVolume extends Volume {
+export interface WriteableVolume extends Volume {
     commit() : Promise<void>;
     abandon() : Promise<void>;
 
@@ -26,7 +26,7 @@ interface WriteableVolume extends Volume {
     resolveInode(inodeId: string) : Promise<WriteableInode>;
 }
 
-interface Inode {
+export interface Inode {
     id: string;
     title: string;
     canonicalPath: string;
@@ -34,31 +34,31 @@ interface Inode {
     traverse(index: string, slug: string) : Promise<Inode>;
 };
 
-interface WriteableInode extends Inode {
+export interface WriteableInode extends Inode {
     putAttribute(name: string, newMime: string, newData : any) : Promise<void>;
     traverse(index: string, slug: string) : Promise<WriteableInode>;
     unlinkChild(index: string, slug: string) : Promise<void>;
     link(index: string, newLink: LinkInfo) : Promise<void>;
 }
 
-interface LinkInfo {
+export interface LinkInfo {
     target: {volume?: string, inode: string} | {url: string},
     sortKey: string,
     slug: string,
     type: "redirect" | "hardlink"
 }
 
-interface RedirectLinkInfo extends LinkInfo {
+export interface RedirectLinkInfo extends LinkInfo {
     type: "redirect",
     target: {volume?: string, inode: string} | {url: string},
 }
 
-interface HardLinkInfo extends LinkInfo {
+export interface HardLinkInfo extends LinkInfo {
     type: "hardlink",
     target: {volume?: string, inode: string}
 }
 
-interface Attribute {
+export interface Attribute {
     name: string;
     mime: string;
     contents: stream.Readable;
