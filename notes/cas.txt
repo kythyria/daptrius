@@ -1,0 +1,47 @@
+We could store the filesystem in git by having a large number of ID-named directories, one per inode.
+Contents of each one are its attributes as a (type,name) combo, eg, data.data or data.acl or entries.categories or entries.directory or keyvalues.minecraft
+Type first seems like it simplifies parsing, but is really arbitrary (missing type or name is invalid anyways).
+data is just a regular file
+entries is a directory, each entry is an ID-named file containing the entry info.
+
+Hmm.
+
+/volumeinfo
+    JSON { root: inodeid, direntsBelongToInodeFor: attrname[] }
+/inodes
+/inodes/:inodeid/
+/inodes/:inodeid/info
+    JSON { title: string, canonical_path: path, mimetypes: { [attrname] : mimetype } }
+/inodes/:inodeid/data-:attrname
+    Generic blob.
+/inodes/:inodeid/indirect-:attrname
+    Explicit indirection to a blob.
+/inodes/:inodeid/index-:attrname
+    Expanded tree, in JSON a map of slug to { sortkey: string, target: inodeid | url, hardness: boolean }
+/inodes/:inodeid/keyvalues-:attrname
+    Either JSON or directory with filename is key and contents is JSON.
+
+We can do better than this, but that limits the ability to reuse git.
+
+If we somehow serialise commits enough to densely number new pages, have a nice way to limit the size of /inodes :
+    First 16 files are 0 1 2 3 4 5 6 7 8 9 a b c d e f
+    Then move 0 to 0/00 and create 0/01 0/02 etc
+    Then 1 to 1/10 and create 1/11 1/12 etc
+    When f/ff exists, move 0/00 to 0/0/000
+
+    ie, in base 4 and 1-digit splitting, files created are 0 1 2 3 01 02 03 11 12 13 21 22 23
+Realistically it's not much of an issue.
+
+We need some indexes. One for full-text search, and some more to map between paths and such. In particular, we need tables like
+inodepath  : (revision,path) -> {redirect: url} | {inode: hash}
+attrpath   : (revision,path,attribute) -> {blob: hash, contentType: string}
+revlinks   : (revision,path) -> { [indexname] : { title: string, path: string, inode: hash } }
+
+So now the data directory has four directories, git is the bare git repo, inodepath, attrpath, revlinks are leveldb tables.
+
+Large file support, we can punt on for now, though it will change all the commit IDs if we ever rewrite history to add it, thus breaking links.
+Solution may be to use synthetic commit IDs based on hiding the details of large file support, which may be completely out of line,
+or use something like bup's rolling hash based splits (admittedly, bup is designed for write speed, not read).
+
+Question of where to store mimetypes exists, especially if they can be manually set. And whether to use pure JSON for the volume and
+inode info files, seeing as git really likes diffing things (or disable plaintext diffs for that).

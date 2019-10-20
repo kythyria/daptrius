@@ -134,10 +134,16 @@ URLs:
 daptrius-inode:
     <volume name> "$" <inode number> [ "?" <query string> ]
         Refer to a page in a wiki or filesystem volume of the current instance by its inode number.
-    "//" <name> "/" <volume name> "$" <inode number> [ "?" <query string> ]
-        Same, but intersite link to the site named <name>
 daptrius-path:
     "//./" <volume name> "/" <path> ["?" <query>]
         Page on this wiki by path, rendered using relative or absolute URLs as needed.
     "//" <name> "/" <volume name> "/" <path> ["?" <query>]
         Same, but intersite link to the site named <name>
+
+daptrius-inode://main/ca8fe
+daptrius-inode:///ca9fe
+
+daptrius-inode://./ca9fe
+
+daptrius-inode:main$ca8fe
+daptrius-inode:.$ca8fe
