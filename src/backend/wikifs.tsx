@@ -28,8 +28,6 @@ export interface WriteableVolume extends Volume {
 
 export interface Inode {
     id: string;
-    title: string;
-    canonicalPath: string;
     getAttribute(name: string) : Promise<Attribute>;
     traverse(index: string, slug: string) : Promise<Inode>;
 };
@@ -59,7 +57,24 @@ export interface HardLinkInfo extends LinkInfo {
 }
 
 export interface Attribute {
+    type: string;
     name: string;
+}
+
+export interface DataAttribute extends Attribute {
+    type: "data";
     mime: string;
     contents: stream.Readable;
+}
+
+export interface BasicInfoAttribute extends Attribute {
+    type: "basicinfo";
+    title: string;
+    canonicalPath: string;
+}
+
+export interface KeyValuesAttribute extends Attribute, AsyncIterable<any> {
+    type: "keyvalues";
+    
+    get(key: string) : Promise<any>;
 }
