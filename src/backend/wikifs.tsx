@@ -1,6 +1,6 @@
-type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
 import * as stream from 'stream';
 
+type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
 type Principal = string;
 
 interface Volume {
