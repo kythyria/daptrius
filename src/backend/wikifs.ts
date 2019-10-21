@@ -11,33 +11,11 @@ export interface Volume {
     resolveInode(inodeId: string) : Promise<Inode>;
 };
 
-export interface UnlockedVolume extends Volume {
-    beginNewVersion(principal: Principal) : Promise<WriteableVolume>;
-}
-
-export interface WriteableVolume extends Volume {
-    commit() : Promise<void>;
-    abandon() : Promise<void>;
-
-    newInode() : Promise<WriteableInode>;
-
-    rootInode : Promise<WriteableInode>;
-    resolvePath(path: string) : Promise<WriteableInode>;
-    resolveInode(inodeId: string) : Promise<WriteableInode>;
-}
-
 export interface Inode {
     id: string;
     getAttribute(name: string) : Promise<Attribute>;
     traverse(index: string, slug: string) : Promise<Inode>;
 };
-
-export interface WriteableInode extends Inode {
-    putAttribute(name: string, newMime: string, newData : any) : Promise<void>;
-    traverse(index: string, slug: string) : Promise<WriteableInode>;
-    unlinkChild(index: string, slug: string) : Promise<void>;
-    link(index: string, newLink: LinkInfo) : Promise<void>;
-}
 
 export interface LinkInfo {
     target: {volume?: string, inode: string} | {url: string},
