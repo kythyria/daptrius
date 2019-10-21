@@ -4,17 +4,16 @@ export type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
 export type Principal = string;
 
 export interface Volume {
-    label : string;
     type  : "wiki";
-    rootInode : Promise<Inode>;
-    resolvePath(path: string) : Promise<Inode>;
-    resolveInode(inodeId: string) : Promise<Inode>;
+    rootInode() : AsyncResult<Inode>;
+    resolvePath(path: string) : AsyncResult<Inode>;
+    resolveInode(inodeId: string) : AsyncResult<Inode>;
 };
 
 export interface Inode {
     id: string;
-    getAttribute(name: string) : Promise<Attribute>;
-    traverse(index: string, slug: string) : Promise<Inode>;
+    getAttribute(name: string) : AsyncResult<Attribute>;
+    traverse(index: string, slug: string) : AsyncResult<Inode>;
 };
 
 export interface LinkInfo {
@@ -54,5 +53,5 @@ export interface BasicInfoAttribute extends Attribute {
 export interface KeyValuesAttribute extends Attribute, AsyncIterable<any> {
     type: "keyvalues";
     
-    get(key: string) : Promise<any>;
+    get(key: string) : AsyncResult<any>;
 }
