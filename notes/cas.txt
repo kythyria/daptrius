@@ -10,7 +10,7 @@ Hmm.
     JSON { root: inodeid, direntsBelongToInodeFor: attrname[] }
 /inodes
 /inodes/:inodeid/
-/inodes/:inodeid/info
+/inodes/:inodeid/basicinfo-inode
     JSON { title: string, canonical_path: path, mimetypes: { [attrname] : mimetype } }
 /inodes/:inodeid/data-:attrname
     Generic blob.
