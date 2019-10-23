@@ -1,23 +1,24 @@
-import { Volume, Principal, Inode, LinkInfo } from "./wikifs";
+import { Volume, Principal, Inode, LinkInfo, AsyncResult } from "./wikifs";
 
 export interface UnlockedVolume extends Volume {
-    beginNewVersion(principal: Principal) : Promise<WriteableVolume>;
+    beginNewVersion(principal: Principal) : AsyncResult<WriteableVolume>;
 }
 
 export interface WriteableVolume extends Volume {
-    commit() : Promise<void>;
-    abandon() : Promise<void>;
+    commit() : AsyncResult<void>;
+    abandon() : AsyncResult<void>;
 
-    newInode() : Promise<WriteableInode>;
+    newInode() : AsyncResult<WriteableInode>;
 
-    rootInode : Promise<WriteableInode>;
-    resolvePath(path: string) : Promise<WriteableInode>;
-    resolveInode(inodeId: string) : Promise<WriteableInode>;
+    rootInode() : AsyncResult<WriteableInode>;
+    resolvePath(path: string) : AsyncResult<WriteableInode>;
+    resolvePath(path: string[]) : AsyncResult<WriteableInode>;
+    resolveInode(inodeId: string) : AsyncResult<WriteableInode>;
 }
 
 export interface WriteableInode extends Inode {
-    putAttribute(name: string, newMime: string, newData : any) : Promise<void>;
-    traverse(index: string, slug: string) : Promise<WriteableInode>;
-    unlinkChild(index: string, slug: string) : Promise<void>;
-    link(index: string, newLink: LinkInfo) : Promise<void>;
+    putAttribute(name: string, newMime: string, newData : any) : AsyncResult<void>;
+    traverse(index: string, slug: string) : AsyncResult<WriteableInode>;
+    unlinkChild(index: string, slug: string) : AsyncResult<void>;
+    link(index: string, newLink: LinkInfo) : AsyncResult<void>;
 }

@@ -7,6 +7,7 @@ export interface Volume {
     type  : "wiki";
     rootInode() : AsyncResult<Inode>;
     resolvePath(path: string) : AsyncResult<Inode>;
+    resolvePath(path: string[]) : AsyncResult<Inode>;
     resolveInode(inodeId: string) : AsyncResult<Inode>;
 };
 
