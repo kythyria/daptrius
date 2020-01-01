@@ -45,3 +45,7 @@ or use something like bup's rolling hash based splits (admittedly, bup is design
 
 Question of where to store mimetypes exists, especially if they can be manually set. And whether to use pure JSON for the volume and
 inode info files, seeing as git really likes diffing things (or disable plaintext diffs for that).
+
+Base of IDs is 50, from the repertoire
+0123456789abcdefghijkmnpqrstuvwxyzABDEFGHJKLMNQRTY
+Which has a reduced number of easily-misread characters (eg, I and l are missing because of fonts which use effectively the same glyph for both.)

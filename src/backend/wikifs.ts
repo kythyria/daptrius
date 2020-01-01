@@ -1,6 +1,7 @@
 import * as stream from 'stream';
 
 export type AsyncResult<T, E extends Error = Error> = Promise<T|E>;
+export const AsyncResult = Promise // Fixes ts(1055) errors.
 export type Principal = string;
 
 export interface Volume {
