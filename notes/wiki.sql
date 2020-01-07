@@ -22,9 +22,15 @@ CREATE TABLE principal_authorisations (
     actor_principal_id INTEGER NOT NULL REFERENCES(principals.id)
 );
 
------
--- Core content
------
+------------------
+-- Core content --
+------------------
+-- Since every page has one canonical path, dirents can be inodes. Redirects then have to
+-- be a special type of stream, but that's no worse than existing systems, eg Windows has
+-- shell links be a file format/extension that's special cased by the shell. Probably not
+-- useful that redirects thus have their own read flags, but we can live with that, maybe
+-- put something in the UI to object to the sillier things. This does allow pages to have
+-- descendants but no content, but that's fine too. Filesystems do that, after all.
 
 -- One row for each distinct "commit". The approver is for review workflows where another
 -- user must approve a revision before it becomes visible to everyone.
@@ -38,21 +44,14 @@ CREATE TABLE revisions (
     source         ENUM('manual', 'bot', 'workspace_autopublish') NOT NULL
 );
 
-CREATE TABLE path_components (
-    id         INTEGER PRIMARY KEY,
-    first_rev  INTEGER NOT NULL,
-    last_rev   INTEGER NOT NULL,
-    slug       VARCHAR NOT NULL,
-    parent     INTEGER          REFERENCES(path_components.id),
-    inode      INTEGER          REFERENCES(inodes.id),
-    kind       enum('redirect','hard') NOT NULL -- Is this a cross-reference that should be redirected to the one marked hard?
-)
-
 CREATE TABLE inodes (
     id         INTEGER PRIMARY KEY,
     first_rev  INTEGER NOT NULL,
     last_rev   INTEGER NOT NULL,
-    title      VARCHAR NOT NULL
+    slug       VARCHAR NOT NULL, -- Path component. Ones for a page are often called slugs in web-land.
+    sortkey    VARCHAR,          -- If set, used instead of slug when sorting by slug.
+    title      VARCHAR NOT NULL, -- For use in <title> elements etc.
+    parent     INTEGER          REFERENCES(inodes.id),
 );
 
 CREATE TABLE streams (
@@ -83,7 +82,7 @@ CREATE TABLE crossreferences (
     last_rev    INTEGER NOT NULL,
     target_id   INTEGER NOT NULL REFERENCES(inodes.id),
     link_id     INTEGER NOT NULL REFERENCES(inodes.id),
-    kind        ENUM('category', 'hyperlink')
+    kind        ENUM('category', 'hyperlink', 'redirect')
 );
 
 -- Search index
