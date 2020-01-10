@@ -12,6 +12,7 @@ Three attributes always exist (this assumes types are part of names):
 * `content.data`: The normal entity body. Can be absent/empty, as in redirects.
 * `meta.props`: Metadata in name/value form, such as WebDAV properties.
 * `children.rel`: The children of this file, in the sense of a directory's children.
+* `redirects.rev`: Lists files that are internal redirects to this one.
 
 For a given path, GET returns a representation of that file as a whole.
 * `?attribute` selects a specific attribute to examine
@@ -38,6 +39,5 @@ The wiki implementation of this stuff includes a few more:
 * `meta.props`: Overrides for OEmbed etc go in here too.
 * `category_members.rel`: All the pages that list this one as a category.
 * `categories.rev`: All the pages this one lists as categories
-* `redirects.rev`: Lists pages that are redirects to this one.
 * `whatlinkshere.rev`: All the pages that link to this one.
 
