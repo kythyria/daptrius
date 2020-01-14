@@ -32,10 +32,25 @@ CREATE TABLE principal_authorisations (
 -- put something in the UI to object to the sillier things. This does allow pages to have
 -- descendants but no content, but that's fine too. Filesystems do that, after all.
 
+-- A volume is a tree of pages. They're also the unit of visibility control: You can make
+-- one totally invisible to unauthorised clients, but not individual pages. Such a volume
+-- generates 404s if you don't have access, gets filtered out of whatlinkshere, cannot be
+-- a source of transclusion for unhidden volumes, etc. They're also not versioned, so you
+-- need to be careful. Oh, and not all volumes live in this DB, some are magic, and might
+-- not even implement the wikifs protocol.
+CREATE TABLE volumes (
+    id        INTEGER PRIMARY KEY,
+    name      VARCHAR NOT NULL,
+    acl       VARCHAR NOT NULL,
+    root_page INTEGER NOT NULL REFERENCES(inodes.id)
+);
+
 -- One row for each distinct "commit". The approver is for review workflows where another
 -- user must approve a revision before it becomes visible to everyone.
 CREATE TABLE revisions (
     id             INTEGER   PRIMARY KEY,
+    volume         INTEGER   NOT NULL REFERENCES(volumes.id),
+    volume_revnum  INTEGER   NOT NULL, -- per-volume revision number, shown in the UI.
     created_at     TIMESTAMP NOT NULL,
     creator_ident  INTEGER   NOT NULL REFERENCES(principals.id),
     approved_at    TIMESTAMP NOT NULL,
@@ -46,12 +61,13 @@ CREATE TABLE revisions (
 
 CREATE TABLE inodes (
     id         INTEGER PRIMARY KEY,
+    volume     INTEGER NOT NULL REFERENCES(volumes.id),
+    parent     INTEGER          REFERENCES(inodes.id),
     first_rev  INTEGER NOT NULL,
     last_rev   INTEGER NOT NULL,
     slug       VARCHAR NOT NULL, -- Path component. Ones for a page are often called slugs in web-land.
     sortkey    VARCHAR,          -- If set, used instead of slug when sorting by slug.
-    title      VARCHAR NOT NULL, -- For use in <title> elements etc.
-    parent     INTEGER          REFERENCES(inodes.id),
+    title      VARCHAR NOT NULL  -- For use in <title> elements etc.
 );
 
 CREATE TABLE streams (
@@ -82,7 +98,7 @@ CREATE TABLE crossreferences (
     last_rev    INTEGER NOT NULL,
     target_id   INTEGER NOT NULL REFERENCES(inodes.id),
     link_id     INTEGER NOT NULL REFERENCES(inodes.id),
-    kind        ENUM('category', 'hyperlink', 'redirect')
+    kind        ENUM('category', 'hyperlink', 'redirect', 'transclude')
 );
 
 -- Search index
@@ -92,4 +108,4 @@ CREATE TABLE search_documents (
     inode_id    INTEGER  NOT NULL REFERENCES(inodes.id),
     doc_name    VARCHAR  NOT NULL,
     document    TSVECTOR NOT NULL
-)
+);

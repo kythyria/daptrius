@@ -1,0 +1,31 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "Attributes": {
+            "type": "object",
+            "properties": {
+                "fs.redirect": { "type":"string", "format": "iri" },
+                "fs.owner": { "type": "string" },
+                "fs.attributes": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/AttributeMetaInfo"}
+                },
+                "fs.name": {"type": "string"},
+                "fs.title": {"type": "string"},
+                "fs.stable_url": { "type":"string", "format": "iri" },
+                "wiki.last_revision": { "type": "number" },
+                "wiki.last_editor": {"type": "string"},
+                "wiki.approver": {"type": "string"},
+                "wiki.approval_date": {"type":"string", "format": "date-time"}
+            }
+        },
+        "AttributeMetaInfo": {
+            "properties": {
+                "name": {"type": "string"},
+                "type": {"type": "string", "format": "mimetype"},
+                "size": {"type": "number", "multipleOf": 1}
+            },
+            "required": ["name", "type", "size"]
+        }
+    }
+}

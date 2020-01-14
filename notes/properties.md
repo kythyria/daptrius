@@ -6,9 +6,6 @@ Some properties (in meta.props) are basically standard.
 String URL. If set, this file is a redirect to someplace. Setting it while the file isn't
 empty is an error.
 
-## fs.acl
-ACL.
-
 ## fs.owner
 UID. If the access control engine or user procedures demand that someone be identified as
 the owner of a file, this property lists who that is.
