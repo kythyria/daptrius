@@ -1,0 +1,23 @@
+{
+  "name": "daptrius",
+  "version": "0.0.1",
+  "description": "Wiki/CMS tool",
+  "main": "index.js",
+  "dependencies": {
+    "pg": "^7.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.8",
+    "@types/pg": "^7.14.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kythyria/daptrius.git"
+  },
+  "author": "Kyth Tieran",
+  "license": "AGPL",
+  "bugs": {
+    "url": "https://github.com/kythyria/daptrius/issues"
+  },
+  "homepage": "https://github.com/kythyria/daptrius#readme"
+}

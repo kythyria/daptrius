@@ -1,5 +1,7 @@
+export type PathSpec = string[] | number;
+
 export interface Basic {
-    pathname: string;
+    path: PathSpec;
     operation: string;
 }
 

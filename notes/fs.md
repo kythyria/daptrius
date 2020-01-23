@@ -15,6 +15,7 @@ Three attributes always exist (this assumes types are part of names):
 * `redirects.rev`: Lists files that are internal redirects to this one.
 
 For a given path, GET returns a representation of that file as a whole.
+* `?metafile` only works on the root witho
 * `?attribute` selects a specific attribute to examine
 * `?format` is equivalent to an `Accept` header.
 * `?display=render` gives you the browser-friendly form rather than the raw data.
@@ -40,4 +41,10 @@ The wiki implementation of this stuff includes a few more:
 * `category_members.rel`: All the pages that list this one as a category.
 * `categories.rev`: All the pages this one lists as categories
 * `whatlinkshere.rev`: All the pages that link to this one.
+* `history.data`: Changelog of this file.
 
+The root node of each volume must be named `$Root`; the API in `webfs/volume.ts` requires
+this be stated explicitly, though the HTTP-level API prohibits stating it. This is mostly
+to simplify implementation of the postgres backend, but this naturally suggests someplace
+to stash, eg, per-volume security policies, even if they'll have to be exposed by another
+volume type. An obvious other one is `$Changelog` for the recent changes.
